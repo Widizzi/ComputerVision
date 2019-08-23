@@ -38,11 +38,11 @@ int main(void) {
 //	VideoCapture cap(0); //0 for camera on port 0
 //	cap.open(0);
 
-	VideoCapture cap("Material/RetroTarget.mov"); //Path for movies
-	cap.open("Material/RetroTarget.mov");
+	VideoCapture cap("../Material/RetroTarget.mov"); //Path for movies
+	cap.open("../Material/RetroTarget.mov");
 
-//	VideoCapture cap("Material/retroNahjpg"); //Path for images -> dont forget the waitKey!
-//	cap.open("Material/retroNah.jpg");
+//	VideoCapture cap("../Material/retroNahjpg"); //Path for images -> dont forget the waitKey!
+//	cap.open("../Material/retroNah.jpg");
 
 
 	frido::FridoPipeline myfrido;
@@ -79,7 +79,7 @@ int main(void) {
 
 			Scalar rectColor(0, 255, 0);
 
-			cout << processedContours.size() << endl;
+//			cout << processedContours.size() << endl;
 
 			if (processedContours.size() > 0) {
 				target_left = minAreaRect(processedContours[0]);
@@ -109,7 +109,7 @@ int main(void) {
 
 //			cout << zero[0] << endl;
 
-			circle(blackImage, zero[0], 5, zeroColor, 3);
+			circle(processedFrame, zero[0], 5, zeroColor, 3);
 			
 
 
@@ -120,10 +120,10 @@ int main(void) {
 				cout << "Point_3_left " << box_left[2] << endl;
 				cout << "Point_4_left " << box_left[3] << endl;
 
-				circle(blackImage, box_left[0], 5, circleColor1, 3);
-				circle(blackImage, box_left[1], 5, circleColor2, 3);
-				circle(blackImage, box_left[2], 5, circleColor3, 3);
-				circle(blackImage, box_left[3], 5, circleColor4, 3);
+				circle(processedFrame, box_left[0], 5, circleColor1, 3);
+				circle(processedFrame, box_left[1], 5, circleColor2, 3);
+				circle(processedFrame, box_left[2], 5, circleColor3, 3);
+				circle(processedFrame, box_left[3], 5, circleColor4, 3);
 			
 			}
 		
@@ -134,15 +134,15 @@ int main(void) {
 				cout << "Point_3_right " << box_right[2] << endl;
 				cout << "Point_4_right " << box_right[3] << endl;
 
-				circle(blackImage, box_right[0], 5, circleColor1, 3);
-				circle(blackImage, box_right[1], 5, circleColor2, 3);
-				circle(blackImage, box_right[2], 5, circleColor3, 3);
-				circle(blackImage, box_right[3], 5, circleColor4, 3);
+				circle(processedFrame, box_right[0], 5, circleColor1, 3);
+				circle(processedFrame, box_right[1], 5, circleColor2, 3);
+				circle(processedFrame, box_right[2], 5, circleColor3, 3);
+				circle(processedFrame, box_right[3], 5, circleColor4, 3);
 
 			}
 			
 //			imshow("Contours", blackImage);
-//			imwrite("Results/retroNahColorPoints.jpg", blackImage);
+//			imwrite("../Results/retroNahColorPoints.jpg", blackImage);
 			imshow("Image", processedFrame);
 //			imshow("raw", frame);	
 
