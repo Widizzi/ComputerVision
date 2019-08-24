@@ -18,7 +18,10 @@ int main(void) {
 	Mat processedFrame;
 
 	vector<vector<Point> >* contours;
-	vector<vector<Point> > processedContours;  
+	vector<vector<Point> > processedContours;
+
+	Point space_holder_point;
+	int sortArray[4];
 
 	RotatedRect target_left;
 	RotatedRect target_right;
@@ -28,9 +31,19 @@ int main(void) {
 	Point2f box_right_2f[4];
 	Point box_right[4];
 
-	Point zero[1];
+	Point box_left_sorted[4];
+	Point box_right_sorted[4];
+
+	Point upperCenterX;
+	Point lowerCenterX;
+
+	int height = 0;
+	int distance = 0;
+
+	Point zero[2];
 	zero[0].x = 0;
 	zero[0].y = 0;
+	zero[1].x = zero[1].y = 50;
 
 	Mat blackImage(480, 640, CV_8UC3);
 	blackImage.setTo(0);
@@ -38,11 +51,11 @@ int main(void) {
 //	VideoCapture cap(0); //0 for camera on port 0
 //	cap.open(0);
 
-	VideoCapture cap("../Material/RetroTarget.mov"); //Path for movies
-	cap.open("../Material/RetroTarget.mov");
+	VideoCapture cap("../Material/Distance.mov"); //Path for movies
+	cap.open("../Material/Distance.mov");
 
-//	VideoCapture cap("../Material/retroNahjpg"); //Path for images -> dont forget the waitKey!
-//	cap.open("../Material/retroNah.jpg");
+	// VideoCapture cap("../Material/retroWeit.jpg"); //Path for images -> dont forget the waitKey!
+	// cap.open("../Material/retroWeit.jpg");
 
 
 	frido::FridoPipeline myfrido;
@@ -99,10 +112,11 @@ int main(void) {
 			}
 				
 
-			Scalar circleColor1(255, 255, 150);
-			Scalar circleColor2(255, 255, 255);
-			Scalar circleColor3(150, 255, 255);
-			Scalar circleColor4(0, 255, 255);
+			Scalar circleColor(255, 255, 150);
+
+			Scalar XcenterColor(0, 0, 0);
+			Scalar YcenterColor(0, 0, 0);
+			Scalar targetCenterColor(0, 255, 255);
 
 
 			Scalar zeroColor(0, 0, 255);
@@ -115,34 +129,100 @@ int main(void) {
 
 			if (processedContours.size() > 0) {
 
-				cout << "Point_1_left " << box_left[0] << endl;
-				cout << "Point_2_left " << box_left[1] << endl;
-				cout << "Point_3_left " << box_left[2] << endl;
-				cout << "Point_4_left " << box_left[3] << endl;
+				for (int i = 0; i < 4; i++) {
+					sortArray[i] = box_left[i].y;
+				}
 
-				circle(processedFrame, box_left[0], 5, circleColor1, 3);
-				circle(processedFrame, box_left[1], 5, circleColor2, 3);
-				circle(processedFrame, box_left[2], 5, circleColor3, 3);
-				circle(processedFrame, box_left[3], 5, circleColor4, 3);
+				sort(sortArray, sortArray + 4);
+
+				for (int i = 0; i < 4; i++) {
+					for (int a = 0; a < 4; a++) {
+						if (sortArray[i] == box_left[a].y) {
+							box_left_sorted[i] = box_left[a];
+							break;
+						}
+					}
+				}
+
+				for (int i = 0; i < 4; i += 2) {
+					if(box_left_sorted[i].x < box_left_sorted[i + 1].x) {
+						space_holder_point = box_left_sorted[i];
+						box_left_sorted[i] = box_left_sorted[i + 1];
+						box_left_sorted[i + 1] = space_holder_point;
+					}
+				}
+
+				// cout << "Point_1_left " << box_left_sorted[0] << endl;
+				// cout << "Point_2_left " << box_left_sorted[1] << endl;
+				// cout << "Point_3_left " << box_left_sorted[2] << endl;
+				// cout << "Point_4_left " << box_left_sorted[3] << endl;
+
+				circle(processedFrame, box_left_sorted[0], 5, circleColor, 3);
+				circle(processedFrame, box_left_sorted[1], 5, circleColor, 3);
+				circle(processedFrame, box_left_sorted[2], 5, circleColor, 3);
+				circle(processedFrame, box_left_sorted[3], 5, circleColor, 3);
 			
 			}
 		
 			if (processedContours.size() > 1) {
-			
-				cout << "Point_1_right " << box_right[0] << endl;
-				cout << "Point_2_right " << box_right[1] << endl;
-				cout << "Point_3_right " << box_right[2] << endl;
-				cout << "Point_4_right " << box_right[3] << endl;
 
-				circle(processedFrame, box_right[0], 5, circleColor1, 3);
-				circle(processedFrame, box_right[1], 5, circleColor2, 3);
-				circle(processedFrame, box_right[2], 5, circleColor3, 3);
-				circle(processedFrame, box_right[3], 5, circleColor4, 3);
+				for (int i = 0; i < 4; i++) {
+					sortArray[i] = box_right[i].y;
+				}
+
+				sort(sortArray, sortArray + 4);
+
+				for (int i = 0; i < 4; i++) {
+					for (int a = 0; a < 4; a++) {
+						if (sortArray[i] == box_right[a].y) {
+							box_right_sorted[i] = box_right[a];
+							break;
+						}
+					}
+				}
+
+				for (int i = 0; i < 4; i += 2) {
+					if(box_right_sorted[i].x > box_right_sorted[i + 1].x) {
+						space_holder_point = box_right_sorted[i];
+						box_right_sorted[i] = box_right_sorted[i + 1];
+						box_right_sorted[i + 1] = space_holder_point;
+					}
+				}
+			
+				// cout << "Point_1_right " << box_right_sorted[0] << endl;
+				// cout << "Point_2_right " << box_right_sorted[1] << endl;
+				// cout << "Point_3_right " << box_right_sorted[2] << endl;
+				// cout << "Point_4_right " << box_right_sorted[3] << endl;
+
+				circle(processedFrame, box_right_sorted[0], 5, circleColor, 3);
+				circle(processedFrame, box_right_sorted[1], 5, circleColor, 3);
+				circle(processedFrame, box_right_sorted[2], 5, circleColor, 3);
+				circle(processedFrame, box_right_sorted[3], 5, circleColor, 3);
 
 			}
+
+			if (processedContours.size() == 2) {
+				upperCenterX = box_left_sorted[1] + (box_right_sorted[1] - box_left_sorted[1]) / 2;
+
+				circle(processedFrame, upperCenterX, 5, XcenterColor, 3);
+				line(processedFrame, box_left_sorted[1], box_right_sorted[1], zeroColor, 3);
+
+				lowerCenterX = box_left_sorted[3] + (box_right_sorted[3] - box_left_sorted[3]) / 2;
+
+				circle(processedFrame, lowerCenterX, 5, XcenterColor, 3);
+				line(processedFrame, box_left_sorted[3], box_right_sorted[3], zeroColor, 3);
+
+				height = lowerCenterX.y - upperCenterX.y;
+
+				distance = 33.75 + (308.5 / pow(2, (height / 41.5)));
+
+
+				cout << "Distance " << distance << endl;
+	
+			}
 			
-//			imshow("Contours", blackImage);
-//			imwrite("../Results/retroNahColorPoints.jpg", blackImage);
+			imshow("Contours", blackImage);
+			// imwrite("../Results/retroWeitHeight.jpg", processedFrame);
 			imshow("Image", processedFrame);
 //			imshow("raw", frame);	
 
