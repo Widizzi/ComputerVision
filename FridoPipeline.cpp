@@ -15,9 +15,9 @@ void FridoPipeline::Process(Mat& source0){
 	//Step CV_resize0:
 	//input
 	Mat cvResizeSrc = source0;
-	Size cvResizeDsize(0, 0);
-	double cvResizeFx = 0.5;  // default Double
-	double cvResizeFy = 0.5;  // default Double
+	Size cvResizeDsize(640, 480);
+	double cvResizeFx = 1.0;  // default Double
+	double cvResizeFy = 1.0;  // default Double
     	int cvResizeInterpolation = INTER_LINEAR;
 	cvResize(cvResizeSrc, cvResizeDsize, cvResizeFx, cvResizeFy, cvResizeInterpolation, this->cvResizeOutput);
 	//Step CV_Medianblur0;
@@ -29,8 +29,8 @@ void FridoPipeline::Process(Mat& source0){
 	//input
 	Mat hsvThresholdInput = cvMedianblurOutput;
 	double hsvThresholdHue[] = {0.0, 180.0};
-	double hsvThresholdSaturation[] = {0.0, 15.0};
-	double hsvThresholdValue[] = {215.0, 255.0};
+	double hsvThresholdSaturation[] = {0.0, 60.0};
+	double hsvThresholdValue[] = {120, 255.0};
 	hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
 	//Step CV_erode0:
 	//input
@@ -49,17 +49,17 @@ void FridoPipeline::Process(Mat& source0){
 	//Step Filter_Contours
 	//Input
 	vector<vector<Point> > filterContoursContours = findContoursOutput;
-	double filterContoursMinArea = 0.0;
+	double filterContoursMinArea = 1000.0;
 	double filterContoursMinPerimeter = 0.0;
-	double filterContoursMinWidth = 10.0;
-	double filterContoursMaxWidth = 100.0;
-	double filterContoursMinHeight = 30.0;
-	double filterContoursMaxHeight = 100.0;
+	double filterContoursMinWidth = 20.0;
+	double filterContoursMaxWidth = 150.0;
+	double filterContoursMinHeight = 50.0;
+	double filterContoursMaxHeight = 250.0;
 	double filterContoursSolidity[] = {0, 100};
 	double filterContoursMaxVertices = 1000000.0;
 	double filterContoursMinVersices = 0.0;
 	double filterContoursMinRatio = 0.0;
-	double filterContoursMaxRatio = 1000.0;
+	double filterContoursMaxRatio = 10.0;
 	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVersices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
 
 
@@ -193,7 +193,7 @@ void FridoPipeline::Process(Mat& source0){
 			if (contour.size() < minVertexCount || contour.size() > maxVertexCount) continue;
 			double ratio = (double) bb.width / (double) bb.height;
 			if (ratio < minRatio || ratio > maxRatio) continue;
-			if (approx.size() != 4) continue;
+			if (approx.size() < 4 || approx.size() > 6) continue;
 			output.push_back(contour);
 
 		}

@@ -48,11 +48,11 @@ int main(void) {
 	Mat blackImage(480, 640, CV_8UC3);
 	blackImage.setTo(0);
 
-//	VideoCapture cap(0); //0 for camera on port 0
-//	cap.open(0);
+	VideoCapture cap(0); //0 for camera on port 0
+	cap.open(0);
 
-	VideoCapture cap("../Material/Distance.mov"); //Path for movies
-	cap.open("../Material/Distance.mov");
+	// VideoCapture cap("../Material/Distance.mov"); //Path for movies
+	// cap.open("../Material/Distance.mov");
 
 	// VideoCapture cap("../Material/retroWeit.jpg"); //Path for images -> dont forget the waitKey!
 	// cap.open("../Material/retroWeit.jpg");
