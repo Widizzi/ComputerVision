@@ -18,7 +18,7 @@ int main(void) {
 	Mat processedFrame;
 
 	vector<vector<Point> >* contours;
-	vector<vector<Point> > processedContours;  
+	vector<vector<Point> > processedContours;
 
 	Point space_holder_point;
 	int sortArray[4];
@@ -38,8 +38,7 @@ int main(void) {
 	Point lowerCenterX;
 
 	int height = 0;
-	string str;
-	stringstream ss;
+	int distance = 0;
 
 	Point zero[2];
 	zero[0].x = 0;
@@ -162,12 +161,6 @@ int main(void) {
 				circle(processedFrame, box_left_sorted[1], 5, circleColor, 3);
 				circle(processedFrame, box_left_sorted[2], 5, circleColor, 3);
 				circle(processedFrame, box_left_sorted[3], 5, circleColor, 3);
-
-				// cout << "Mid  " << (box_left[3] - box_left[0]) / 2 << endl;
-				// cout << "Center " << box_left[0] + (box_left[3] - box_left[0]) / 2 << endl;
-				// circle(processedFrame, box_left[0] + (box_left[3] - box_left[0]) / 2, 5, YcenterColor, 3);
-
-				// circle(processedFrame, box_left[1] + (box_left[0] - box_left[1]) / 2, 5, XcenterColor, 3);
 			
 			}
 		
@@ -221,11 +214,14 @@ int main(void) {
 
 				height = lowerCenterX.y - upperCenterX.y;
 
-				cout << "Height " << height << endl;
+				distance = 33.75 + (308.5 / pow(2, (height / 41.5)));
+
+
+				cout << "Distance " << distance << endl;
 	
 			}
 			
-//			imshow("Contours", blackImage);
+			imshow("Contours", blackImage);
 			// imwrite("../Results/retroWeitHeight.jpg", processedFrame);
 			imshow("Image", processedFrame);
 //			imshow("raw", frame);	
