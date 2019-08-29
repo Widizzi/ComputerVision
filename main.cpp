@@ -8,6 +8,9 @@
 #include <opencv2/video.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+
+#define PI 3.14159265
+
 using namespace std;
 using namespace cv;
 
@@ -38,21 +41,26 @@ int main(void) {
 
 	Point upperCenterX;
 	Point lowerCenterX;
+	Point centerTarget;
 	Point leftMid;
 	Point rightMid;
 
 	int height = 0;
-	int width = 0;
+	int absAngle = 0;
 	int distance = 0;
-	int calculatedWidth = 0;
+	int angle = 0;
 
 	int heightLeft = 0;
 	int heightRight = 0;
 
+	int distanceY = 0;
+	int distanceX = 0;
+
 	Point zero[2];
 	zero[0].x = 0;
 	zero[0].y = 0;
-	zero[1].x = zero[1].y = 50;
+	zero[1].x = 320;
+	zero[1].y = 240;
 
 	Mat blackImage(480, 640, CV_8UC3);
 	blackImage.setTo(0);
@@ -238,24 +246,30 @@ int main(void) {
 				line(processedFrame, box_left_sorted[2], box_right_sorted[2], zeroColor, 3);
 
 				height = lowerCenterX.y - upperCenterX.y;
-				width = rightMid.x - leftMid.x;
-				calculatedWidth = height / 13.5 * 23.5 - width + 2;
 
-				// if (calculatedWidth < 0) {
-				// 	calculatedWidth = 0;
-				// }
-
+				centerTarget.y = upperCenterX.y + (lowerCenterX.y - upperCenterX.y) / 2;
+				centerTarget.x = upperCenterX.x + (lowerCenterX.x - upperCenterX.x) / 2;
+				circle(processedFrame, centerTarget, 5, zeroColor, 3);
+				
 				heightLeft = box_left_sorted[3].y - box_left_sorted[0].y;
 				heightRight = box_right_sorted[3].y - box_right_sorted[0].y;
+
+				angle = (heightLeft - heightRight) / 2;
+				absAngle = abs(angle);
 
 				distance = 37.0 + (308.5 / pow(2, (height / 41.5)));
 
 
-				cout << "Distance: " << distance << " cm ; Angle Width: " << heightLeft - heightRight << " pixels" << endl;
+				cout << "Distance: " << distance << " cm" << endl;
 
-				cout << "Height Left: " << heightLeft << " ; Height Right: " << heightRight << endl;
+				// cout << "Height Left: " << heightLeft << " ; Height Right: " << heightRight << endl;
 
-				cout << "Angle: " << (heightLeft - heightRight) / 2 << endl;
+				cout << "Angle: " << angle << endl;
+
+				cout << "Y Distance: " << cos(absAngle * PI / 180) * distance << endl;
+				cout << "X Distance: " << sin(absAngle * PI / 180) * distance << endl;
+
+				cout << "Offset: " << centerTarget - zero[1] << endl;
 	
 			}
 			
