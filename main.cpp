@@ -22,8 +22,10 @@ int main(void) {
 	Mat processedFrame;
 
 	vector<vector<Point> >* contours;
+	vector<vector<Point> > convertedContours;
+
 	vector<vector<Point> > processedContours;
-	vector<Point> space_holder_contour;
+	vector<vector<Point> >* processedContoursPointer;
 
 	Point space_holder_point;
 	int sortArray[4];
@@ -76,6 +78,7 @@ int main(void) {
 
 
 	frido::FridoPipeline myfrido;
+	frido::FridoCalculation mycalc;
 
 	if(!cap.isOpened()) {
 
@@ -102,15 +105,12 @@ int main(void) {
 			processedFrame = *pointer;
 
 			contours = myfrido.FridoPipeline::GetFilterContoursOutput();
-			processedContours = *contours;
+			convertedContours = *contours;
 
-			if (processedContours.size() == 2) {	
-				if (processedContours[0][0].x > processedContours[1][0].x) {
-					space_holder_contour = processedContours[0];
-					processedContours[0] = processedContours[1];
-					processedContours[1] = space_holder_contour;
-				}
-			}
+			mycalc.FridoCalculation::Calculate(convertedContours);
+
+			processedContoursPointer = mycalc.FridoCalculation::GetCheckedContoursOutput();
+			processedContours = *processedContoursPointer;
 
 			Scalar color(255, 255,255);
 			drawContours(blackImage, processedContours, -1, color, 3);

@@ -43,5 +43,16 @@ class FridoPipeline {
 };
 
 
+class FridoCalculation {
+	private:
+		vector<vector<Point> > checkedContoursOutput;
+		void checkContours(vector<vector<Point> > &, vector<Point> &, vector<vector<Point> > &);
+	public:
+		FridoCalculation();
+		void Calculate(vector<vector<Point> >& convertedContoursInput);
+		vector<vector<Point> >* GetCheckedContoursOutput(); 
+};
+
+
 }
 
