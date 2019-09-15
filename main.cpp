@@ -30,19 +30,14 @@ int main(void) {
 	vector<Point> processedContours;
 	vector<Point>* processedContoursPointer;
 
+	vector<double>* anglePointer;
+	vector<double> angle;
+
+	double* distancePointer;
+	double distance;
+
 	Point left_points[4];
 	Point right_points[4];
-
-	int height = 0;
-	int absAngle = 0;
-	int distance = 0;
-	int angle = 0;
-
-	int heightLeft = 0;
-	int heightRight = 0;
-
-	int distanceY = 0;
-	int distanceX = 0;
 
 	Point zero[2];
 	zero[0].x = 0;
@@ -96,8 +91,6 @@ int main(void) {
 			Scalar white_color(255, 255, 255);
 			drawContours(blackImage, convertedContours, -1, white_color, 3);
 
-			cout << "convertCont size: " << convertedContours.size() << endl;
-
 			if (convertedContours.size() == 2) {
 				mycalc.FridoCalculation::Calculate(convertedContours);
 
@@ -115,9 +108,13 @@ int main(void) {
 				processedContoursPointer = mycalc.FridoCalculation::GetCalculatePointsOutput();
 				processedContours = *processedContoursPointer;
 
+				anglePointer = mycalc.FridoCalculation::GetCalculateAngleOutput();
+				angle = *anglePointer;
+
+				distancePointer = mycalc.FridoCalculation::GetCalculateDistanceOutput();
+				distance = *distancePointer;
+
 				Scalar rectColor(0, 255, 0);
-
-
 
 				fillConvexPoly(processedFrame, left_points, 4, rectColor);
 				fillConvexPoly(processedFrame, right_points, 4, rectColor);				
@@ -135,22 +132,12 @@ int main(void) {
 			
 				circle(processedFrame, processedContours[0], 5, zeroColor, 3);
 
-				// cout << "Point_1_left " << box_left_sorted[0] << endl;
-				// cout << "Point_2_left " << box_left_sorted[1] << endl;
-				// cout << "Point_3_left " << box_left_sorted[2] << endl;
-				// cout << "Point_4_left " << box_left_sorted[3] << endl;
-
 				circle(processedFrame, box_points[0][0], 5, circleColor, 3);
 				circle(processedFrame, box_points[0][1], 5, circleColor, 3);
 				circle(processedFrame, box_points[0][2], 5, circleColor, 3);
 				circle(processedFrame, box_points[0][3], 5, circleColor, 3);
 
 				circle(processedFrame, processedContours[1], 5, circleColor, 3);
-			
-				// cout << "Point_1_right " << box_right_sorted[0] << endl;
-				// cout << "Point_2_right " << box_right_sorted[1] << endl;
-				// cout << "Point_3_right " << box_right_sorted[2] << endl;
-				// cout << "Point_4_right " << box_right_sorted[3] << endl;
 
 				circle(processedFrame, box_points[1][0], 5, circleColor, 3);
 				circle(processedFrame, box_points[1][1], 5, circleColor, 3);
@@ -164,27 +151,14 @@ int main(void) {
 				circle(processedFrame, processedContours[3], 5, XcenterColor, 3);
 				line(processedFrame, box_points[0][2], box_points[1][2], zeroColor, 3);
 
-				height = processedContours[3].y - processedContours[2].y;
-
 				circle(processedFrame, processedContours[4], 5, zeroColor, 3);
-				
-				heightLeft = box_points[0][3].y - box_points[0][0].y;
-				heightRight = box_points[1][3].y - box_points[1][0].y;
-
-				angle = (heightLeft - heightRight) / 2;
-				absAngle = abs(angle);
-
-				distance = 37.0 + (308.5 / pow(2, (height / 41.5)));
-
 
 				cout << "Distance: " << distance << " cm" << endl;
 
-				// cout << "Height Left: " << heightLeft << " ; Height Right: " << heightRight << endl;
+				cout << "Angle: " << angle[0] << endl;
 
-				cout << "Angle: " << angle << endl;
-
-				cout << "Y Distance: " << cos(absAngle * PI / 180) * distance << endl;
-				cout << "X Distance: " << sin(absAngle * PI / 180) * distance << endl;
+				cout << "Y Distance: " << cos(angle[1] * PI / 180) * distance << endl;
+				cout << "X Distance: " << sin(angle[1] * PI / 180) * distance << endl;
 
 				cout << "Offset: " << processedContours[4] - zero[1] << endl;
 	

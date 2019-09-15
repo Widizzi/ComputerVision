@@ -31,6 +31,23 @@ namespace frido {
         //input
         vector<vector<Point> > calculatePointsInput = sortCornersOutput;
         calculatePoints(calculatePointsInput, this->calculatePointsOutput);
+        //Step calculate heights
+        //input
+        vector<Point> calculateAverageHeightInput = calculatePointsOutput;
+        vector<vector<Point> > calculateTargetHeightInput = sortCornersOutput;
+        calculateHeights(calculateAverageHeightInput, calculateTargetHeightInput, this->calculateHeightsOutput);
+        //Step calculate angle
+        //input
+        vector<double> calculateAngleInput = calculateHeightsOutput;
+        double faktor = 2.0;
+        calculateAngle(calculateAngleInput, faktor, this->calculateAngleOutput);
+        //Step calculate distance
+        //input
+        vector<double> calculateDistanceInput = calculateHeightsOutput;
+        double offset = 37.0;
+        double a = 308.5;
+        double b = 41.5;
+        calculateDistance(calculateDistanceInput, offset, a, b, this->calculateDistanceOutput);
     }
 
     vector<vector<Point> >* FridoCalculation::GetCheckedContoursOutput() {
@@ -49,6 +66,15 @@ namespace frido {
     }
     vector<Point>* FridoCalculation::GetCalculatePointsOutput() {
         return &(this->calculatePointsOutput);
+    }
+    vector<double>* FridoCalculation::GetCalculateHeightsOutput() {
+        return &(this->calculateHeightsOutput);
+    }
+    vector<double>* FridoCalculation::GetCalculateAngleOutput() {
+        return &(this->calculateAngleOutput);
+    }
+    double* FridoCalculation::GetCalculateDistanceOutput() {
+        return &(this->calculateDistanceOutput);
     }
 
     //The checkContours Function checks if there are exactely two contours. Its needed to avoid errors in the calculation with nullpointer.
@@ -77,7 +103,6 @@ namespace frido {
         output.clear();
         RotatedRect minAreaTarget;
         Point2f box_2f[4];
-        Point points[4];
         vector<vector<Point> > out;
         out.resize(2, vector<Point>(4));
         int targetNR = 0;
@@ -86,10 +111,7 @@ namespace frido {
             minAreaTarget = minAreaRect(target);
             minAreaTarget.points(box_2f);
             for(int i = 0; i < 4; i++) {
-                points[i] = box_2f[i];
-            }
-            for(int i = 0; i < 4; i++) {
-                out[targetNR][i] = points[i];
+                out[targetNR][i] = box_2f[i];
             }
             targetNR++;
         }
@@ -157,6 +179,34 @@ namespace frido {
 
         output = out;
 
+    }
+
+    //With the Values of the Points you can calculate the height of each targets and the value of the average height
+    void FridoCalculation::calculateHeights(vector<Point> &points, vector<vector<Point> > &corners, vector<double> &output) {
+        vector<double> out(3);
+        double average_height = points[3].y - points[2].y;
+        double height_left = corners[0][3].y - corners[0][0].y;
+        double height_right = corners[1][3].y - corners[1][0].y;
+        out[0] = average_height;
+        out[1] = height_left;
+        out[2] = height_right;
+        output = out;
+    }
+
+    //to calculate the angle of the robot in relation to the target we have to calculate the difference between the height of the two targets and use a factor to display it in degrees
+    void FridoCalculation::calculateAngle(vector<double> &heights, double faktor, vector<double> &output) {
+        vector<double> out(2);
+        double angle = (heights[1] - heights[2]) / faktor;
+        double absAngle = abs(angle);
+        out[0] = angle;
+        out[1] = absAngle;
+        output = out;
+    }
+
+    //last thing to do is to calculate the distance of the Robot to the target. we can do that with a formula: offset + (a / (averageHeight / b) ^ 2)
+    void FridoCalculation::calculateDistance(vector<double> &heights, double offset, double a, double b, double &output) {
+        double distance = offset + (a / pow(2, (heights[0] / b)));
+        output = distance;
     }
 
 }
