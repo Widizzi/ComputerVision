@@ -24,28 +24,14 @@ int main(void) {
 	vector<vector<Point> >* contours;
 	vector<vector<Point> > convertedContours;
 
-	vector<vector<Point> > processedContours;
-	vector<vector<Point> >* processedContoursPointer;
+	vector<vector<Point> >* box_points_pointer;
+	vector<vector<Point> > box_points;
 
-	Point space_holder_point;
-	int sortArray[4];
+	vector<Point> processedContours;
+	vector<Point>* processedContoursPointer;
 
-	RotatedRect target_left;
-	RotatedRect target_right;
-
-	Point2f box_left_2f[4];
-	Point box_left[4];
-	Point2f box_right_2f[4];
-	Point box_right[4];
-
-	Point box_left_sorted[4];
-	Point box_right_sorted[4];
-
-	Point upperCenterX;
-	Point lowerCenterX;
-	Point centerTarget;
-	Point leftMid;
-	Point rightMid;
+	Point left_points[4];
+	Point right_points[4];
 
 	int height = 0;
 	int absAngle = 0;
@@ -107,152 +93,83 @@ int main(void) {
 			contours = myfrido.FridoPipeline::GetFilterContoursOutput();
 			convertedContours = *contours;
 
-			mycalc.FridoCalculation::Calculate(convertedContours);
+			Scalar white_color(255, 255, 255);
+			drawContours(blackImage, convertedContours, -1, white_color, 3);
 
-			processedContoursPointer = mycalc.FridoCalculation::GetCheckedContoursOutput();
-			processedContours = *processedContoursPointer;
+			cout << "convertCont size: " << convertedContours.size() << endl;
 
-			Scalar color(255, 255,255);
-			drawContours(blackImage, processedContours, -1, color, 3);
+			if (convertedContours.size() == 2) {
+				mycalc.FridoCalculation::Calculate(convertedContours);
 
-			Scalar rectColor(0, 255, 0);
+				box_points_pointer = mycalc.FridoCalculation::GetSortCornersOutput();
+				box_points = *box_points_pointer;
 
-//			cout << processedContours.size() << endl;
-
-			if (processedContours.size() > 0) {
-				target_left = minAreaRect(processedContours[0]);
-				target_left.points(box_left_2f);
-				for(int i = 0; i < 4; i++) {
-					box_left[i] = box_left_2f[i];
+				for (int i = 0; i < 4; i++) {
+					left_points[i] = box_points[0][i];
 				}
-				fillConvexPoly(processedFrame, box_left, 4, rectColor);
-			}
-			if (processedContours.size() > 1) {
-				target_right = minAreaRect(processedContours[1]);
-				target_right.points(box_right_2f);
-				for(int i = 0; i < 4; i++) {
-					box_right[i] = box_right_2f[i];
-				}
-				fillConvexPoly(processedFrame, box_right, 4, rectColor);
-			}
 				
+				for (int i = 0; i < 4; i++) {
+					right_points[i] = box_points[1][i];
+				}
 
-			Scalar circleColor(255, 255, 150);
+				processedContoursPointer = mycalc.FridoCalculation::GetCalculatePointsOutput();
+				processedContours = *processedContoursPointer;
 
-			Scalar XcenterColor(0, 0, 0);
-			Scalar YcenterColor(0, 0, 0);
-			Scalar targetCenterColor(0, 255, 255);
+				Scalar rectColor(0, 255, 0);
 
 
-			Scalar zeroColor(0, 0, 255);
 
-//			cout << zero[0] << endl;
+				fillConvexPoly(processedFrame, left_points, 4, rectColor);
+				fillConvexPoly(processedFrame, right_points, 4, rectColor);				
 
-			circle(processedFrame, zero[0], 5, zeroColor, 3);
+				Scalar circleColor(255, 255, 150);
+
+				Scalar XcenterColor(0, 0, 0);
+				Scalar YcenterColor(0, 0, 0);
+				Scalar targetCenterColor(0, 255, 255);
+
+
+				Scalar zeroColor(0, 0, 255);
+
+				circle(processedFrame, zero[0], 5, zeroColor, 3);
 			
-
-
-			if (processedContours.size() > 0) {
-
-				for (int i = 0; i < 4; i++) {
-					sortArray[i] = box_left[i].y;
-				}
-
-				sort(sortArray, sortArray + 4);
-
-				for (int i = 0; i < 4; i++) {
-					for (int a = 0; a < 4; a++) {
-						if (sortArray[i] == box_left[a].y) {
-							box_left_sorted[i] = box_left[a];
-							break;
-						}
-					}
-				}
-
-				for (int i = 0; i > 4; i += 2) {
-					if(box_left_sorted[i].x < box_left_sorted[i + 1].x) {
-						space_holder_point = box_left_sorted[i];
-						box_left_sorted[i] = box_left_sorted[i + 1];
-						box_left_sorted[i + 1] = space_holder_point;
-					}
-				}
-
-				leftMid = box_left_sorted[1] + (box_left_sorted[3] - box_left_sorted[1]) / 2;
-
-				circle(processedFrame, leftMid, 5, zeroColor, 3);
+				circle(processedFrame, processedContours[0], 5, zeroColor, 3);
 
 				// cout << "Point_1_left " << box_left_sorted[0] << endl;
 				// cout << "Point_2_left " << box_left_sorted[1] << endl;
 				// cout << "Point_3_left " << box_left_sorted[2] << endl;
 				// cout << "Point_4_left " << box_left_sorted[3] << endl;
 
-				circle(processedFrame, box_left_sorted[0], 5, circleColor, 3);
-				circle(processedFrame, box_left_sorted[1], 5, circleColor, 3);
-				circle(processedFrame, box_left_sorted[2], 5, circleColor, 3);
-				circle(processedFrame, box_left_sorted[3], 5, circleColor, 3);
-			
-			}
-		
-			if (processedContours.size() > 1) {
+				circle(processedFrame, box_points[0][0], 5, circleColor, 3);
+				circle(processedFrame, box_points[0][1], 5, circleColor, 3);
+				circle(processedFrame, box_points[0][2], 5, circleColor, 3);
+				circle(processedFrame, box_points[0][3], 5, circleColor, 3);
 
-				for (int i = 0; i < 4; i++) {
-					sortArray[i] = box_right[i].y;
-				}
-
-				sort(sortArray, sortArray + 4);
-
-				for (int i = 0; i < 4; i++) {
-					for (int a = 0; a < 4; a++) {
-						if (sortArray[i] == box_right[a].y) {
-							box_right_sorted[i] = box_right[a];
-							break;
-						}
-					}
-				}
-
-				for (int i = 0; i > 4; i += 2) {
-					if(box_right_sorted[i].x < box_right_sorted[i + 1].x) {
-						space_holder_point = box_right_sorted[i];
-						box_right_sorted[i] = box_right_sorted[i + 1];
-						box_right_sorted[i + 1] = space_holder_point;
-					}
-				}
-
-				rightMid = box_right_sorted[1] + (box_right_sorted[3] - box_right_sorted[1]) / 2;
-
-				circle(processedFrame, rightMid, 5, circleColor, 3);
+				circle(processedFrame, processedContours[1], 5, circleColor, 3);
 			
 				// cout << "Point_1_right " << box_right_sorted[0] << endl;
 				// cout << "Point_2_right " << box_right_sorted[1] << endl;
 				// cout << "Point_3_right " << box_right_sorted[2] << endl;
 				// cout << "Point_4_right " << box_right_sorted[3] << endl;
 
-				circle(processedFrame, box_right_sorted[0], 5, circleColor, 3);
-				circle(processedFrame, box_right_sorted[1], 5, circleColor, 3);
-				circle(processedFrame, box_right_sorted[2], 5, circleColor, 3);
-				circle(processedFrame, box_right_sorted[3], 5, circleColor, 3);
+				circle(processedFrame, box_points[1][0], 5, circleColor, 3);
+				circle(processedFrame, box_points[1][1], 5, circleColor, 3);
+				circle(processedFrame, box_points[1][2], 5, circleColor, 3);
+				circle(processedFrame, box_points[1][3], 5, circleColor, 3);
 
-			}
+			
+				circle(processedFrame, processedContours[2], 5, XcenterColor, 3);
+				line(processedFrame, box_points[0][0], box_points[1][0], zeroColor, 3);
 
-			if (processedContours.size() == 2) {
-				upperCenterX = box_left_sorted[0] + (box_right_sorted[0] - box_left_sorted[0]) / 2;
+				circle(processedFrame, processedContours[3], 5, XcenterColor, 3);
+				line(processedFrame, box_points[0][2], box_points[1][2], zeroColor, 3);
 
-				circle(processedFrame, upperCenterX, 5, XcenterColor, 3);
-				line(processedFrame, box_left_sorted[0], box_right_sorted[0], zeroColor, 3);
+				height = processedContours[3].y - processedContours[2].y;
 
-				lowerCenterX = box_left_sorted[2] + (box_right_sorted[2] - box_left_sorted[2]) / 2;
-
-				circle(processedFrame, lowerCenterX, 5, XcenterColor, 3);
-				line(processedFrame, box_left_sorted[2], box_right_sorted[2], zeroColor, 3);
-
-				height = lowerCenterX.y - upperCenterX.y;
-
-				centerTarget.y = upperCenterX.y + (lowerCenterX.y - upperCenterX.y) / 2;
-				centerTarget.x = upperCenterX.x + (lowerCenterX.x - upperCenterX.x) / 2;
-				circle(processedFrame, centerTarget, 5, zeroColor, 3);
+				circle(processedFrame, processedContours[4], 5, zeroColor, 3);
 				
-				heightLeft = box_left_sorted[3].y - box_left_sorted[0].y;
-				heightRight = box_right_sorted[3].y - box_right_sorted[0].y;
+				heightLeft = box_points[0][3].y - box_points[0][0].y;
+				heightRight = box_points[1][3].y - box_points[1][0].y;
 
 				angle = (heightLeft - heightRight) / 2;
 				absAngle = abs(angle);
@@ -269,7 +186,7 @@ int main(void) {
 				cout << "Y Distance: " << cos(absAngle * PI / 180) * distance << endl;
 				cout << "X Distance: " << sin(absAngle * PI / 180) * distance << endl;
 
-				cout << "Offset: " << centerTarget - zero[1] << endl;
+				cout << "Offset: " << processedContours[4] - zero[1] << endl;
 	
 			}
 			

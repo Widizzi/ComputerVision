@@ -46,11 +46,23 @@ class FridoPipeline {
 class FridoCalculation {
 	private:
 		vector<vector<Point> > checkedContoursOutput;
-		void checkContours(vector<vector<Point> > &, vector<Point> &, vector<vector<Point> > &);
+		vector<vector<Point> > sortedContoursOutput;
+		vector<vector<Point> > findMinAreaRectOutput;
+		vector<vector<Point> > sortCornersOutput;
+		vector<Point> calculatePointsOutput;
+		void checkContours(vector<vector<Point> > &, vector<vector<Point> > &);
+		void sortContours(vector<vector<Point> > &, vector<Point> &, vector<vector<Point> > &);
+		void findMinAreaRect(vector<vector<Point> > &, vector<vector<Point> > &);
+		void sortCorners(vector<vector<Point> > &, vector<vector<Point> > &);
+		void calculatePoints(vector<vector<Point> > &, vector<Point> &);
 	public:
 		FridoCalculation();
 		void Calculate(vector<vector<Point> >& convertedContoursInput);
 		vector<vector<Point> >* GetCheckedContoursOutput(); 
+		vector<vector<Point> >* GetSortedContoursOutput();
+		vector<vector<Point> >* GetFindMinAreaRectOutput();
+		vector<vector<Point> >* GetSortCornersOutput();
+		vector<Point>* GetCalculatePointsOutput();
 };
 
 
