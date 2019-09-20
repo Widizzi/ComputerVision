@@ -15,6 +15,6 @@ include(${QT_USE_FILE})
 include_directories( ${OpenCV_INCLUDE_DIRS})
 add_definitions(${QT_DEFINITIONS})
 
-cuda_add_executable(ComputerVision main.cpp FridoPipeline.cpp calculation.cpp)
+cuda_add_executable(ComputerVision main.cpp FridoProcess.cpp FridoCalculation.cpp FridoIllustrate.cpp)
 
 target_link_libraries(ComputerVision ${OpenCV_LIBS})

@@ -16,7 +16,7 @@ using namespace std;
 
 namespace frido {
 
-class FridoPipeline {
+class FridoProcess {
 	private:
 		Mat cvResizeOutput;
 		Mat cvMedianblurOutput;
@@ -31,7 +31,7 @@ class FridoPipeline {
 		void findContours(Mat &, bool, vector<vector<Point> > &);
 		void filterContours(vector<vector<Point> > &, double, double, double, double, double, double, double [], double, double, double, double, vector<vector<Point> > &);	
 	public:
-		FridoPipeline();
+		FridoProcess();
 		void Process(Mat& source0);
 		Mat* GetCvResizeOutput();
 		Mat* GetCvMedianblurOutput();
@@ -72,6 +72,18 @@ class FridoCalculation {
 		vector<double>* GetCalculateHeightsOutput();
 		vector<double>* GetCalculateAngleOutput();
 		double* GetCalculateDistanceOutput();
+};
+
+
+class FridoIllustrate {
+	private:
+		void drawEntire(FridoProcess*, FridoCalculation*);
+		void drawContours(FridoProcess*);
+	public:
+		FridoIllustrate();
+		void Illustrate(FridoProcess* myprocess, FridoCalculation* mycalc, bool, bool);
+		Mat* GetEntireFrame();
+		Mat* GetContoursFrame();
 };
 
 
