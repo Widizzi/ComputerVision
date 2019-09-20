@@ -18,35 +18,8 @@ int main(void) {
 
 	Mat frame;
 
-	Mat* pointer;
-	Mat processedFrame;
-
-	vector<vector<Point> >* contours;
-	vector<vector<Point> > convertedContours;
-
-	vector<vector<Point> >* box_points_pointer;
-	vector<vector<Point> > box_points;
-
-	vector<Point> processedContours;
-	vector<Point>* processedContoursPointer;
-
-	vector<double>* anglePointer;
-	vector<double> angle;
-
-	double* distancePointer;
-	double distance;
-
-	Point left_points[4];
-	Point right_points[4];
-
-	Point zero[2];
-	zero[0].x = 0;
-	zero[0].y = 0;
-	zero[1].x = 320;
-	zero[1].y = 240;
-
-	Mat blackImage(480, 640, CV_8UC3);
-	blackImage.setTo(0);
+	vector<vector<Point> > contours;
+	vector<double> preparedNetworkTables;
 
 	VideoCapture cap(0); //0 for camera on port 0
 	cap.open(0);
@@ -58,8 +31,9 @@ int main(void) {
 	// cap.open("../Material/retroWeit.jpg");
 
 
-	frido::FridoPipeline myfrido;
+	frido::FridoProcess myprocess;
 	frido::FridoCalculation mycalc;
+	frido::FridoIllustrate myillu;
 
 	if(!cap.isOpened()) {
 
@@ -78,95 +52,33 @@ int main(void) {
 				
 		} else {
 		
-			blackImage.setTo(0);
-			myfrido.FridoPipeline::Process(frame);
+			myprocess.FridoProcess::Process(frame);
 
+			contours = *myprocess.FridoProcess::GetFilterContoursOutput();
 			
-			pointer = myfrido.FridoPipeline::GetCvResizeOutput();
-			processedFrame = *pointer;
+			if (contours.size() == 2) {
+				mycalc.FridoCalculation::Calculate(contours);		
 
-			contours = myfrido.FridoPipeline::GetFilterContoursOutput();
-			convertedContours = *contours;
+				preparedNetworkTables = *mycalc.FridoCalculation::GetPrepareNetworkTablesOutput();
 
-			Scalar white_color(255, 255, 255);
-			drawContours(blackImage, convertedContours, -1, white_color, 3);
+				cout << "Distance: " << preparedNetworkTables[0] << " cm" << endl;
 
-			if (convertedContours.size() == 2) {
-				mycalc.FridoCalculation::Calculate(convertedContours);
+				cout << "Angle: " << preparedNetworkTables[1] << endl;
 
-				box_points_pointer = mycalc.FridoCalculation::GetSortCornersOutput();
-				box_points = *box_points_pointer;
+				cout << "X Distance: " << preparedNetworkTables[2] << endl;
+				cout << "Y Distance: " << preparedNetworkTables[3] << endl;
 
-				for (int i = 0; i < 4; i++) {
-					left_points[i] = box_points[0][i];
-				}
-				
-				for (int i = 0; i < 4; i++) {
-					right_points[i] = box_points[1][i];
-				}
+				cout << "X Offset: " << preparedNetworkTables[4] << endl;
+				cout << "Y Offset: " << preparedNetworkTables[5] << endl;
 
-				processedContoursPointer = mycalc.FridoCalculation::GetCalculatePointsOutput();
-				processedContours = *processedContoursPointer;
-
-				anglePointer = mycalc.FridoCalculation::GetCalculateAngleOutput();
-				angle = *anglePointer;
-
-				distancePointer = mycalc.FridoCalculation::GetCalculateDistanceOutput();
-				distance = *distancePointer;
-
-				Scalar rectColor(0, 255, 0);
-
-				fillConvexPoly(processedFrame, left_points, 4, rectColor);
-				fillConvexPoly(processedFrame, right_points, 4, rectColor);				
-
-				Scalar circleColor(255, 255, 150);
-
-				Scalar XcenterColor(0, 0, 0);
-				Scalar YcenterColor(0, 0, 0);
-				Scalar targetCenterColor(0, 255, 255);
-
-
-				Scalar zeroColor(0, 0, 255);
-
-				circle(processedFrame, zero[0], 5, zeroColor, 3);
-			
-				circle(processedFrame, processedContours[0], 5, zeroColor, 3);
-
-				circle(processedFrame, box_points[0][0], 5, circleColor, 3);
-				circle(processedFrame, box_points[0][1], 5, circleColor, 3);
-				circle(processedFrame, box_points[0][2], 5, circleColor, 3);
-				circle(processedFrame, box_points[0][3], 5, circleColor, 3);
-
-				circle(processedFrame, processedContours[1], 5, circleColor, 3);
-
-				circle(processedFrame, box_points[1][0], 5, circleColor, 3);
-				circle(processedFrame, box_points[1][1], 5, circleColor, 3);
-				circle(processedFrame, box_points[1][2], 5, circleColor, 3);
-				circle(processedFrame, box_points[1][3], 5, circleColor, 3);
-
-			
-				circle(processedFrame, processedContours[2], 5, XcenterColor, 3);
-				line(processedFrame, box_points[0][0], box_points[1][0], zeroColor, 3);
-
-				circle(processedFrame, processedContours[3], 5, XcenterColor, 3);
-				line(processedFrame, box_points[0][2], box_points[1][2], zeroColor, 3);
-
-				circle(processedFrame, processedContours[4], 5, zeroColor, 3);
-
-				cout << "Distance: " << distance << " cm" << endl;
-
-				cout << "Angle: " << angle[0] << endl;
-
-				cout << "Y Distance: " << cos(angle[1] * PI / 180) * distance << endl;
-				cout << "X Distance: " << sin(angle[1] * PI / 180) * distance << endl;
-
-				cout << "Offset: " << processedContours[4] - zero[1] << endl;
-	
 			}
+
+			myillu.FridoIllustrate::Illustrate(&myprocess, &mycalc, true, false);
+
 			
-			// imshow("Contours", blackImage);
-			// imwrite("../Results/retroWeitHeight.jpg", processedFrame);
-			imshow("Image", processedFrame);
+			// imshow("Contours", *myillu.GetContoursFrame());
+			// imwrite("../Results/retroWeitHeight.jpg", *myillu.GetEntireFrame());
+			imshow("Image", *myillu.GetEntireFrame());
 //			imshow("raw", frame);	
 
 			if(waitKey(5) >= 0) //waitKey(5) for Videos //waitKey(0) for Pictures

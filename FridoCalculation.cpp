@@ -1,5 +1,7 @@
 #include "FridoPipeline.h"
 
+#define PI 3.14159265
+
 using namespace cv;
 using namespace std;
 
@@ -48,16 +50,23 @@ namespace frido {
         double a = 308.5;
         double b = 41.5;
         calculateDistance(calculateDistanceInput, offset, a, b, this->calculateDistanceOutput);
+        //Step prepare Networktables
+        //input
+        double ntDistanceInput = calculateDistanceOutput;
+        vector<double> ntAngleInput = calculateAngleOutput;
+        vector<Point> ntPointsInput = calculatePointsOutput;
+        Point zero;
+        zero.x = 320;
+        zero.y = 240;
+        prepareNetworkTables(ntDistanceInput, ntAngleInput, ntPointsInput, zero, this->prepareNetworkTablesOutput);
     }
 
     vector<vector<Point> >* FridoCalculation::GetCheckedContoursOutput() {
         return &(this->checkedContoursOutput);
     }
-
     vector<vector<Point> >* FridoCalculation::GetSortedContoursOutput() {
         return &(this->sortedContoursOutput);
     }
-
     vector<vector<Point> >* FridoCalculation::GetFindMinAreaRectOutput() {
         return &(this->findMinAreaRectOutput);
     }
@@ -75,6 +84,9 @@ namespace frido {
     }
     double* FridoCalculation::GetCalculateDistanceOutput() {
         return &(this->calculateDistanceOutput);
+    }
+    vector<double>* FridoCalculation::GetPrepareNetworkTablesOutput() {
+        return &(this->prepareNetworkTablesOutput);
     }
 
     //The checkContours Function checks if there are exactely two contours. Its needed to avoid errors in the calculation with nullpointer.
@@ -207,6 +219,21 @@ namespace frido {
     void FridoCalculation::calculateDistance(vector<double> &heights, double offset, double a, double b, double &output) {
         double distance = offset + (a / pow(2, (heights[0] / b)));
         output = distance;
+    }
+
+    //Makes a Vector with all the important values for the NetworkTables that you can read out just this vector
+    void FridoCalculation::prepareNetworkTables(double &distance, vector<double> &angle, vector<Point> &points, Point &zero, vector<double> &output) {
+        vector<double> out(6);
+        
+        out[0] = distance; //distance of Camera to Target
+        out[1] = angle[0]; //Angle of Camera to Target
+        out[2] = sin(angle[1] * PI / 180) * distance; //X Distance from Camera to Target
+        out[3] = cos(angle[1] * PI / 180) * distance; //Y Distance from Camera to Target
+        out[4] = points[4].x - zero.x; //X Offset to zeroPoint
+        out[5] = points[4].y - zero.y; //Y Offset to zeroPoint
+
+        output = out;
+
     }
 
 }
