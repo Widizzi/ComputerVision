@@ -53,6 +53,7 @@ class FridoCalculation {
 		vector<double> calculateHeightsOutput;
 		vector<double>  calculateAngleOutput;
 		double calculateDistanceOutput;
+		vector<double> prepareNetworkTablesOutput;
 		void checkContours(vector<vector<Point> > &, vector<vector<Point> > &);
 		void sortContours(vector<vector<Point> > &, vector<Point> &, vector<vector<Point> > &);
 		void findMinAreaRect(vector<vector<Point> > &, vector<vector<Point> > &);
@@ -61,6 +62,7 @@ class FridoCalculation {
 		void calculateHeights(vector<Point> &, vector<vector<Point> > &, vector<double> &);
 		void calculateAngle(vector<double> &, double, vector<double> &);
 		void calculateDistance(vector<double> &, double, double, double, double &);
+		void prepareNetworkTables(double &, vector<double> &, vector<Point> &, Point &, vector<double> &);
 	public:
 		FridoCalculation();
 		void Calculate(vector<vector<Point> >& convertedContoursInput);
@@ -72,6 +74,7 @@ class FridoCalculation {
 		vector<double>* GetCalculateHeightsOutput();
 		vector<double>* GetCalculateAngleOutput();
 		double* GetCalculateDistanceOutput();
+		vector<double>* GetPrepareNetworkTablesOutput();
 };
 
 

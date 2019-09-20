@@ -18,21 +18,8 @@ int main(void) {
 
 	Mat frame;
 
-	vector<vector<Point> >* contours;
-	vector<vector<Point> > convertedContours;
-
-	vector<Point> processedContours;
-	vector<Point>* processedContoursPointer;
-
-	vector<double>* anglePointer;
-	vector<double> angle;
-
-	double* distancePointer;
-	double distance;
-
-	Point zero;
-	zero.x = 320;
-	zero.y = 240;
+	vector<vector<Point> > contours;
+	vector<double> preparedNetworkTables;
 
 	VideoCapture cap(0); //0 for camera on port 0
 	cap.open(0);
@@ -67,30 +54,23 @@ int main(void) {
 		
 			myprocess.FridoProcess::Process(frame);
 
-			contours = myprocess.FridoProcess::GetFilterContoursOutput();
-			convertedContours = *contours;
+			contours = *myprocess.FridoProcess::GetFilterContoursOutput();
 			
-			if (convertedContours.size() == 2) {
-				mycalc.FridoCalculation::Calculate(convertedContours);
+			if (contours.size() == 2) {
+				mycalc.FridoCalculation::Calculate(contours);		
 
-				processedContoursPointer = mycalc.FridoCalculation::GetCalculatePointsOutput();
-				processedContours = *processedContoursPointer;
+				preparedNetworkTables = *mycalc.FridoCalculation::GetPrepareNetworkTablesOutput();
 
-				anglePointer = mycalc.FridoCalculation::GetCalculateAngleOutput();
-				angle = *anglePointer;
+				cout << "Distance: " << preparedNetworkTables[0] << " cm" << endl;
 
-				distancePointer = mycalc.FridoCalculation::GetCalculateDistanceOutput();
-				distance = *distancePointer;			
+				cout << "Angle: " << preparedNetworkTables[1] << endl;
 
-				cout << "Distance: " << distance << " cm" << endl;
+				cout << "X Distance: " << preparedNetworkTables[2] << endl;
+				cout << "Y Distance: " << preparedNetworkTables[3] << endl;
 
-				cout << "Angle: " << angle[0] << endl;
+				cout << "X Offset: " << preparedNetworkTables[4] << endl;
+				cout << "Y Offset: " << preparedNetworkTables[5] << endl;
 
-				cout << "Y Distance: " << cos(angle[1] * PI / 180) * distance << endl;
-				cout << "X Distance: " << sin(angle[1] * PI / 180) * distance << endl;
-
-				cout << "Offset: " << processedContours[4] - zero << endl;
-	
 			}
 
 			myillu.FridoIllustrate::Illustrate(&myprocess, &mycalc, true, false);
