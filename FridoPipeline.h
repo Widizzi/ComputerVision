@@ -16,7 +16,7 @@ using namespace std;
 
 namespace frido {
 
-class FridoPipeline {
+class FridoProcess {
 	private:
 		Mat cvResizeOutput;
 		Mat cvMedianblurOutput;
@@ -31,7 +31,7 @@ class FridoPipeline {
 		void findContours(Mat &, bool, vector<vector<Point> > &);
 		void filterContours(vector<vector<Point> > &, double, double, double, double, double, double, double [], double, double, double, double, vector<vector<Point> > &);	
 	public:
-		FridoPipeline();
+		FridoProcess();
 		void Process(Mat& source0);
 		Mat* GetCvResizeOutput();
 		Mat* GetCvMedianblurOutput();
@@ -40,6 +40,53 @@ class FridoPipeline {
 		vector<vector<Point> >* GetFindContoursOutput();
 		vector<vector<Point> >* GetFilterContoursOutput();	
 
+};
+
+
+class FridoCalculation {
+	private:
+		vector<vector<Point> > checkedContoursOutput;
+		vector<vector<Point> > sortedContoursOutput;
+		vector<vector<Point> > findMinAreaRectOutput;
+		vector<vector<Point> > sortCornersOutput;
+		vector<Point> calculatePointsOutput;
+		vector<double> calculateHeightsOutput;
+		vector<double>  calculateAngleOutput;
+		double calculateDistanceOutput;
+		vector<double> prepareNetworkTablesOutput;
+		void checkContours(vector<vector<Point> > &, vector<vector<Point> > &);
+		void sortContours(vector<vector<Point> > &, vector<Point> &, vector<vector<Point> > &);
+		void findMinAreaRect(vector<vector<Point> > &, vector<vector<Point> > &);
+		void sortCorners(vector<vector<Point> > &, vector<vector<Point> > &);
+		void calculatePoints(vector<vector<Point> > &, vector<Point> &);
+		void calculateHeights(vector<Point> &, vector<vector<Point> > &, vector<double> &);
+		void calculateAngle(vector<double> &, double, vector<double> &);
+		void calculateDistance(vector<double> &, double, double, double, double &);
+		void prepareNetworkTables(double &, vector<double> &, vector<Point> &, Point &, vector<double> &);
+	public:
+		FridoCalculation();
+		void Calculate(vector<vector<Point> >& convertedContoursInput);
+		vector<vector<Point> >* GetCheckedContoursOutput(); 
+		vector<vector<Point> >* GetSortedContoursOutput();
+		vector<vector<Point> >* GetFindMinAreaRectOutput();
+		vector<vector<Point> >* GetSortCornersOutput();
+		vector<Point>* GetCalculatePointsOutput();
+		vector<double>* GetCalculateHeightsOutput();
+		vector<double>* GetCalculateAngleOutput();
+		double* GetCalculateDistanceOutput();
+		vector<double>* GetPrepareNetworkTablesOutput();
+};
+
+
+class FridoIllustrate {
+	private:
+		void drawEntire(FridoProcess*, FridoCalculation*);
+		void drawContours(FridoProcess*);
+	public:
+		FridoIllustrate();
+		void Illustrate(FridoProcess* myprocess, FridoCalculation* mycalc, bool, bool);
+		Mat* GetEntireFrame();
+		Mat* GetContoursFrame();
 };
 
 

@@ -6,12 +6,12 @@ using namespace std;
 
 namespace frido {
 
-FridoPipeline::FridoPipeline() {
+FridoProcess::FridoProcess() {
 }
 /**
 * Runs an iteration of the pipeline and updates outputs.
 */
-void FridoPipeline::Process(Mat& source0){
+void FridoProcess::Process(Mat& source0){
 	//Step CV_resize0:
 	//input
 	Mat cvResizeSrc = source0;
@@ -69,42 +69,42 @@ void FridoPipeline::Process(Mat& source0){
 	 * This method is a generated getter for the output of a CV_resize.
 	 * @return Mat output from CV_resize.
 	 */
-	Mat* FridoPipeline::GetCvResizeOutput(){
+	Mat* FridoProcess::GetCvResizeOutput(){
 		return &(this->cvResizeOutput);
 	}
 	/**
 	 * This method is a generated getter for the output of a CV_medianBlur.
 	 * @return Mat output from CV_medianBlur.
 	 */
-	Mat* FridoPipeline::GetCvMedianblurOutput(){
+	Mat* FridoProcess::GetCvMedianblurOutput(){
 		return &(this->cvMedianblurOutput);
 	}
 	/**
 	 * This method is a generated getter for the output of a HSV_Threshold.
 	 * @return Mat output from HSV_Threshold.
 	 */
-	Mat* FridoPipeline::GetHsvThresholdOutput(){
+	Mat* FridoProcess::GetHsvThresholdOutput(){
 		return &(this->hsvThresholdOutput);
 	}
 	/**
 	 * This method is a generated getter for the output of a CV_erode.
 	 * @return Mat output from CV_erode.
 	 */
-	Mat* FridoPipeline::GetCvErodeOutput(){
+	Mat* FridoProcess::GetCvErodeOutput(){
 		return &(this->cvErodeOutput);
 	}
 	/**
 	 * This method is a generated getter for the output of a Find_Contorus.
 	 * @return Mat output from Find_Contours.
 	 */
-	vector<vector<Point> >* FridoPipeline::GetFindContoursOutput(){
+	vector<vector<Point> >* FridoProcess::GetFindContoursOutput(){
 		return &(this->findContoursOutput);
 	}
 	/**
 	 * This method is a generated getter for the output of a Filter_Contorus.
 	 * @return Mat output from Filter_Contours.
 	 */
-	vector<vector<Point> >* FridoPipeline::GetFilterContoursOutput(){
+	vector<vector<Point> >* FridoProcess::GetFilterContoursOutput(){
 		return &(this->filterContoursOutput);
 	}
 		
@@ -118,14 +118,14 @@ void FridoPipeline::Process(Mat& source0){
 	 * @param interpolation type of interpolation to use.
 	 * @param dst output image.
 	 */
-	void FridoPipeline::cvResize(Mat &src, Size &dSize, double fx, double fy, int interpolation, Mat &dst) {
+	void FridoProcess::cvResize(Mat &src, Size &dSize, double fx, double fy, int interpolation, Mat &dst) {
 		resize(src, dst, dSize, fx, fy, interpolation);
 	}
 
 	/**
 	 "
 	 */
-	void FridoPipeline::cvMedianblur(Mat &src, double kSize, Mat &dst) {
+	void FridoProcess::cvMedianblur(Mat &src, double kSize, Mat &dst) {
 		medianBlur(src, dst, int(kSize));
 	}
 
@@ -138,7 +138,7 @@ void FridoPipeline::Process(Mat& source0){
 	 * @param val The min and max value.
 	 * @param output The image in which to store the output.
 	 */
-	void FridoPipeline::hsvThreshold(Mat &input, double hue[], double sat[], double val[], Mat &out) {
+	void FridoProcess::hsvThreshold(Mat &input, double hue[], double sat[], double val[], Mat &out) {
 		cvtColor(input, out, COLOR_BGR2HSV);
 		inRange(out,Scalar(hue[0], sat[0], val[0]), Scalar(hue[1], sat[1], val[1]), out);
 	}
@@ -153,7 +153,7 @@ void FridoPipeline::Process(Mat& source0){
 	 * @param borderValue value to be used for a constant border.
 	 * @param dst Output Image.
 	 */
-	void FridoPipeline::cvErode(Mat &src, Mat &kernel, Point &anchor, double iterations, int borderType, Scalar &borderValue, Mat &dst) {
+	void FridoProcess::cvErode(Mat &src, Mat &kernel, Point &anchor, double iterations, int borderType, Scalar &borderValue, Mat &dst) {
 		erode(src, dst, kernel, anchor, (int)iterations, borderType, borderValue);	
 	}
 
@@ -164,7 +164,7 @@ void FridoPipeline::Process(Mat& source0){
 	 * @param externalOnly if only external contours are to be found.
 	 * @param contours vector of contours to put contours in.
 	*/	
-	void FridoPipeline::findContours(Mat &input, bool externalOnly, vector<vector<Point> > &contours) {
+	void FridoProcess::findContours(Mat &input, bool externalOnly, vector<vector<Point> > &contours) {
 		vector<Vec4i> hierarchy;
 		contours.clear();
 		int mode = externalOnly ? RETR_EXTERNAL : RETR_LIST;
@@ -175,7 +175,7 @@ void FridoPipeline::Process(Mat& source0){
 	/**
 	 * Filters through contours.
 	*/
-	void FridoPipeline::filterContours(vector<vector<Point> > &inputContours, double minArea, double minPerimeter, double minWidth, double maxWidth, double minHeight, double maxHeight, double solidity[], double maxVertexCount, double minVertexCount, double minRatio, double maxRatio, vector<vector<Point> > &output) {
+	void FridoProcess::filterContours(vector<vector<Point> > &inputContours, double minArea, double minPerimeter, double minWidth, double maxWidth, double minHeight, double maxHeight, double solidity[], double maxVertexCount, double minVertexCount, double minRatio, double maxRatio, vector<vector<Point> > &output) {
 		vector<Point> hull;
 		vector<Point> approx;
 		output.clear();
