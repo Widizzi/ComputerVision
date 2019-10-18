@@ -10,6 +10,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/exe)
 find_package(CUDA)
 find_package(OpenCV)
 find_package(Qt4)
+find_package(wpilib REQUIRED)
 
 include(${QT_USE_FILE})
 include_directories( ${OpenCV_INCLUDE_DIRS})
@@ -18,3 +19,5 @@ add_definitions(${QT_DEFINITIONS})
 cuda_add_executable(ComputerVision main.cpp FridoProcess.cpp FridoCalculation.cpp FridoIllustrate.cpp)
 
 target_link_libraries(ComputerVision ${OpenCV_LIBS})
+target_link_libraries(ComputerVision ${NtCore_LIBS})
+target_link_libraries(ComputerVision ntcore wpiutil cscore)
