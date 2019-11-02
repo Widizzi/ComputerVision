@@ -14,6 +14,7 @@
 using namespace cv;
 using namespace std;
 
+//namespace that the names of the right functions are taken and not other ones if there exist some
 namespace frido {
 
 class FridoProcess {

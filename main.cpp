@@ -40,6 +40,7 @@ int main(void) {
 	// cap.open("../Material/retroWeit.jpg");
 
 
+	//Generate Object of class to adress its methods
 	frido::FridoProcess myprocess;
 	frido::FridoCalculation mycalc;
 	frido::FridoIllustrate myillu;

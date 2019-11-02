@@ -18,7 +18,7 @@ void FridoProcess::Process(Mat& source0){
 	Size cvResizeDsize(640, 480);
 	double cvResizeFx = 1.0;  // default Double
 	double cvResizeFy = 1.0;  // default Double
-    	int cvResizeInterpolation = INTER_LINEAR;
+    int cvResizeInterpolation = INTER_LINEAR;
 	cvResize(cvResizeSrc, cvResizeDsize, cvResizeFx, cvResizeFy, cvResizeInterpolation, this->cvResizeOutput);
 	//Step CV_Medianblur0;
 	//input
@@ -35,8 +35,8 @@ void FridoProcess::Process(Mat& source0){
 	//Step CV_erode0:
 	//input
 	Mat cvErodeSrc = hsvThresholdOutput;
-	Mat cvErodeKernel;
-	Point cvErodeAnchor(-1, -1);
+	Mat cvErodeKernel; //Structure of Erosionfigure default 3x3 Pixel Square
+	Point cvErodeAnchor(-1, -1); //Sets Anchor into center of Erosionfigure
 	double cvErodeIterations = 1.0; //default double
 	int cvErodeBordertype = BORDER_CONSTANT;
 	Scalar cvErodeBordervalue(-1);
@@ -165,11 +165,11 @@ void FridoProcess::Process(Mat& source0){
 	 * @param contours vector of contours to put contours in.
 	*/	
 	void FridoProcess::findContours(Mat &input, bool externalOnly, vector<vector<Point> > &contours) {
-		vector<Vec4i> hierarchy;
+		vector<Vec4i> hierarchy; //hirarchy is a vetor for each contour with four integers for next, previous, parent and child countour
 		contours.clear();
-		int mode = externalOnly ? RETR_EXTERNAL : RETR_LIST;
-		int method = CHAIN_APPROX_SIMPLE;
-		cv::findContours(input, contours, hierarchy, mode, method); 
+		int mode = externalOnly ? RETR_EXTERNAL : RETR_LIST; //Chooses mode dependig of bool state from variable externalOnly
+		int method = CHAIN_APPROX_SIMPLE; //Does not store all points in the contour
+		cv::findContours(input, contours, hierarchy, mode, method);
 	}
 
 	/**
@@ -181,19 +181,35 @@ void FridoProcess::Process(Mat& source0){
 		output.clear();
 		for(vector<Point> contour: inputContours) {
 			Rect bb = boundingRect(contour);
-			approxPolyDP(Mat(contour), approx, arcLength(Mat(contour), true)*0.02, true);
+			/** 
+			 * approxPolyDP creates a polygon out of a bad shaped contour polygon.
+			 * @param Input vector of Points for a contour
+			 * @param approx output in form of a vector of points
+			 * @param accuracy defines how far the approximate contour can be away from the input contour
+			 * @param closed specifies if the input is in a closed shape
+			 * 
+			 * arcLength calculates the perimeter of the contour
+			 * @param Input vector of Points for a contour
+			 * @param closed specifies if the input is in a closed shape
+			**/
+			approxPolyDP(Mat(contour), approx, arcLength(Mat(contour), true)*0.02, true); 
 			if (bb.width < minWidth || bb.width > maxWidth) continue;
 			if (bb.height < minHeight ||bb.height > maxHeight) continue;
 			double area = contourArea(contour);
 			if (area < minArea) continue;
-			if ( arcLength(contour, true) < minPerimeter) continue;
-			convexHull(Mat(contour, true), hull);
+/**			if ( arcLength(contour, true) < minPerimeter) continue;
+			//calculate points of a perimeter which has no concave curves from the input contour and saves it in the hull vector
+			convexHull(Mat(contour, true), hull); 
+			// the more concave parts the raw contour has, the lower is the solid value
 			double solid = 100 * area / contourArea(hull);
 			if (solid < solidity[0] || solid > solidity[1]) continue;
+			//Option to filter the contour by count of peaks
 			if (contour.size() < minVertexCount || contour.size() > maxVertexCount) continue;
 			double ratio = (double) bb.width / (double) bb.height;
 			if (ratio < minRatio || ratio > maxRatio) continue;
+**/			//Filters the contour if there are less then 4 or more then 5 corners
 			if (approx.size() < 4 || approx.size() > 6) continue;
+			//pushes the contour back to the output if the contour didnt get kicked out because of an invalid condition
 			output.push_back(contour);
 
 		}
