@@ -7,7 +7,7 @@ namespace frido {
 
     Scalar rectColor(0, 255, 0);
     Scalar circleColor(255, 255, 150);
-    Scalar contourColor(0, 0, 0);
+    Scalar contourColor(0, 255, 255);
     Scalar zeroColor(0, 0, 255);
     Scalar white_color(255, 255, 255);
 
