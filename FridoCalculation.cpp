@@ -1,6 +1,9 @@
 #include "FridoPipeline.h"
 
 #define PI 3.14159265
+#define ZEROX 320
+#define ZEROY 240
+#define TARGET_HEIGHT 14
 
 using namespace cv;
 using namespace std;
@@ -38,27 +41,31 @@ namespace frido {
         vector<Point> calculateAverageHeightInput = calculatePointsOutput;
         vector<vector<Point> > calculateTargetHeightInput = sortCornersOutput;
         calculateHeights(calculateAverageHeightInput, calculateTargetHeightInput, this->calculateHeightsOutput);
-        //Step calculate angle
-        //input
-        vector<double> calculateAngleInput = calculateHeightsOutput;
-        double faktor = 2.0;
-        calculateAngle(calculateAngleInput, faktor, this->calculateAngleOutput);
         //Step calculate distance
         //input
         vector<double> calculateDistanceInput = calculateHeightsOutput;
-        double offset = 37.0;
-        double a = 308.5;
-        double b = 41.5;
-        calculateDistance(calculateDistanceInput, offset, a, b, this->calculateDistanceOutput);
+        double multiplier = 7087.0;
+        double sqrt = 0.941;
+        calculateDistance(calculateDistanceInput, multiplier, sqrt, this->calculateDistanceOutput);
+        //Step calculate angle
+        //input
+        vector<double> calculateAngleInput = calculateHeightsOutput;
+        vector<Point> pointsInput = calculatePointsOutput;
+        double distanceInput = calculateDistanceOutput;
+        Point zero;
+        zero.x = ZEROX;
+        zero.y = ZEROY;
+        calculateAngle(calculateAngleInput, pointsInput, distanceInput, zero, this->calculateAngleOutput);
         //Step prepare Networktables
         //input
         double ntDistanceInput = calculateDistanceOutput;
         vector<double> ntAngleInput = calculateAngleOutput;
         vector<Point> ntPointsInput = calculatePointsOutput;
-        Point zero;
-        zero.x = 320;
-        zero.y = 240;
-        prepareNetworkTables(ntDistanceInput, ntAngleInput, ntPointsInput, zero, this->prepareNetworkTablesOutput);
+        vector<double> ntHeightsInput = calculateHeightsOutput;
+//        Point zero;
+//        zero.x = ZEROX;
+//        zero.y = ZEROY;
+        prepareNetworkTables(ntDistanceInput, ntAngleInput, ntPointsInput, ntHeightsInput, zero, this->prepareNetworkTablesOutput);
     }
 
     vector<vector<Point> >* FridoCalculation::GetCheckedContoursOutput() {
@@ -182,8 +189,10 @@ namespace frido {
         output.clear();
         vector<Point> out(5);
         //Output[leftMid, rightMid, upperCenterX, lowerCenterX, centerTarget]
-        out[0] = targetPoints[0][1] + (targetPoints[0][3] - targetPoints[0][1]) / 2;
-        out[1] = targetPoints[1][1] + (targetPoints[1][3] - targetPoints[1][1]) / 2;
+        out[0].x = targetPoints[0][0].x + (targetPoints[0][3].x - targetPoints[0][0].x) / 2;  
+        out[0].y = (targetPoints[0][0].y + targetPoints[0][1].y + targetPoints[0][2].y + targetPoints[0][3].y) / 4;
+        out[1].x = targetPoints[1][0].x + (targetPoints[1][3].x - targetPoints[1][0].x) / 2;
+        out[1].y = (targetPoints[1][0].y + targetPoints[1][1].y + targetPoints[1][2].y + targetPoints[1][3].y) / 4;
         out[2] = targetPoints[0][0] + (targetPoints[1][0] - targetPoints[0][0]) / 2;
         out[3] = targetPoints[0][2] + (targetPoints[1][2] - targetPoints[0][2]) / 2;
         out[4].y = out[2].y + (out[3].y - out[2].y) / 2;
@@ -197,39 +206,59 @@ namespace frido {
     void FridoCalculation::calculateHeights(vector<Point> &points, vector<vector<Point> > &corners, vector<double> &output) {
         vector<double> out(3);
         double average_height = points[3].y - points[2].y;
-        double height_left = corners[0][3].y - corners[0][0].y;
-        double height_right = corners[1][3].y - corners[1][0].y;
+        double height_left = corners[0][2].y - corners[0][0].y;
+        double height_right = corners[1][2].y - corners[1][0].y;
         out[0] = average_height;
         out[1] = height_left;
         out[2] = height_right;
         output = out;
     }
 
+    //last thing to do is to calculate the distance of the Robot to the target. we can do that with a formula: offset + (a / (averageHeight / b) ^ 2)
+    void FridoCalculation::calculateDistance(vector<double> &heights, double multiplier, double exponent, double &output) {
+        double distance = pow(multiplier / heights[0], 1.0 / exponent);
+        output = distance;
+    }
+
     //to calculate the angle of the robot in relation to the target we have to calculate the difference between the height of the two targets and use a factor to display it in degrees
-    void FridoCalculation::calculateAngle(vector<double> &heights, double faktor, vector<double> &output) {
+    void FridoCalculation::calculateAngle(vector<double> &heights, vector<Point> &points, double distance, Point &zero, vector<double> &output) {
         vector<double> out(2);
-        double angle = (heights[1] - heights[2]) / faktor;
+        //convertes the offset from pixels to cm. it uses the height of the target (14cm) as a reference
+        double leftOffsetInCM = (points[0].x - zero.x) / heights[1] * TARGET_HEIGHT;
+        double rightOffsetInCM = (points[1].x - zero.x) / heights[2] * TARGET_HEIGHT;
+//        cout << "leftfOffset: " << leftOffsetInCM << endl;
+//        cout << "rightOffset: " << rightOffsetInCM << endl;
+        double distanceLeftTarget = pow(7087.6 / heights[1], 1.0 / 0.941);
+        double distanceRightTarget = pow(7087.6 / heights[2], 1.0 / 0.941);
+//        cout << "distacneleftTarget: " << distanceLeftTarget << endl;
+//        cout << "distanceRightTarget: " << distanceRightTarget << endl;
+        double leftTargetNoInfluence = sqrt( pow(distanceLeftTarget, 2) - pow(leftOffsetInCM, 2) );
+        double rightTargetNoInfluence = sqrt( pow(distanceRightTarget, 2) - pow(rightOffsetInCM, 2) );
+//        cout << "left no inf: " << leftTargetNoInfluence << endl;
+//        cout << "right no inf: " << rightTargetNoInfluence << endl;
+        double angleGegakt = distanceLeftTarget - distanceRightTarget;
+//        double angleGegakt = leftTargetNoInfluence - rightTargetNoInfluence;
+//        cout << "Gegenkat: " << angleGegakt << endl;
+        double angleAnkat = abs(leftOffsetInCM - rightOffsetInCM);
+//        cout << "ankat: " << angleAnkat << endl;
+        double angle = atan(angleGegakt / angleAnkat) *180 / PI;
+
         double absAngle = abs(angle);
         out[0] = angle;
         out[1] = absAngle;
         output = out;
-    }
 
-    //last thing to do is to calculate the distance of the Robot to the target. we can do that with a formula: offset + (a / (averageHeight / b) ^ 2)
-    void FridoCalculation::calculateDistance(vector<double> &heights, double offset, double a, double b, double &output) {
-        double distance = offset + (a / pow(2, (heights[0] / b)));
-        output = distance;
     }
 
     //Makes a Vector with all the important values for the NetworkTables that you can read out just this vector
-    void FridoCalculation::prepareNetworkTables(double &distance, vector<double> &angle, vector<Point> &points, Point &zero, vector<double> &output) {
+    void FridoCalculation::prepareNetworkTables(double &distance, vector<double> &angle, vector<Point> &points, vector<double> &heights, Point &zero, vector<double> &output) {
         vector<double> out(6);
         
         out[0] = distance; //distance of Camera to Target
         out[1] = angle[0]; //Angle of Camera to Target
         out[2] = sin(angle[1] * PI / 180) * distance; //X Distance from Camera to Target
         out[3] = cos(angle[1] * PI / 180) * distance; //Y Distance from Camera to Target
-        out[4] = points[4].x - zero.x; //X Offset to zeroPoint
+        out[4] = (points[4].x - zero.x) / heights[0] * TARGET_HEIGHT; //X Offset to zeroPoint
         out[5] = points[4].y - zero.y; //Y Offset to zeroPoint
 
         output = out;

@@ -60,9 +60,9 @@ class FridoCalculation {
 		void sortCorners(vector<vector<Point> > &, vector<vector<Point> > &);
 		void calculatePoints(vector<vector<Point> > &, vector<Point> &);
 		void calculateHeights(vector<Point> &, vector<vector<Point> > &, vector<double> &);
-		void calculateAngle(vector<double> &, double, vector<double> &);
-		void calculateDistance(vector<double> &, double, double, double, double &);
-		void prepareNetworkTables(double &, vector<double> &, vector<Point> &, Point &, vector<double> &);
+		void calculateAngle(vector<double> &, vector<Point> &, double, Point &, vector<double> &);
+		void calculateDistance(vector<double> &, double, double, double &);
+		void prepareNetworkTables(double &, vector<double> &, vector<Point> &, vector<double> &, Point &, vector<double> &);
 	public:
 		FridoCalculation();
 		void Calculate(vector<vector<Point> >& convertedContoursInput);
