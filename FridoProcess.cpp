@@ -1,4 +1,5 @@
 #include "FridoPipeline.h"
+#include <chrono>
 
 using namespace cv;
 using namespace std;
@@ -6,12 +7,18 @@ using namespace std;
 
 namespace frido {
 
+double start;
+double end;
+
 FridoProcess::FridoProcess() {
+	start = 0;
+	end = 0;
 }
 /**
 * Runs an iteration of the pipeline and updates outputs.
 */
 void FridoProcess::Process(Mat& source0){
+	start = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 	//Step CV_resize0:
 	//input
 	Mat cvResizeSrc = source0;
@@ -62,7 +69,8 @@ void FridoProcess::Process(Mat& source0){
 	double filterContoursMaxRatio = 10.0;
 	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVersices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
 
-
+	end = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+//	cout << "Process Runtine: " << end - start << endl;
 }
 
 	/**

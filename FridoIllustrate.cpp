@@ -1,9 +1,13 @@
 #include "FridoPipeline.h"
+#include <chrono>
 
 using namespace cv;
 using namespace std;
 
 namespace frido {
+
+    double anfang;
+    double schluss;
 
     Scalar rectColor(0, 255, 0);
     Scalar circleColor(255, 255, 150);
@@ -27,6 +31,9 @@ namespace frido {
     vector<vector<Point> > filteredContours;
 
     FridoIllustrate::FridoIllustrate() {
+        anfang = 0;
+        schluss = 0;
+
         zero.x = 320;
         zero.y = 240;
 
@@ -37,6 +44,7 @@ namespace frido {
     }
 
     void FridoIllustrate::Illustrate(FridoProcess* myprocess, FridoCalculation* mycalc, bool entirely, bool contours) {
+        anfang = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 
         //Raw Image after resize with the calculate lines and colored Targets on it
         if (entirely == true && myprocess->GetFilterContoursOutput()->size() == 2) {
@@ -47,6 +55,9 @@ namespace frido {
         if (contours == true) {
             drawContours(myprocess);
         }
+
+        schluss = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+//	    cout << "Illustrate Runtine: " << schluss - anfang << endl;
     }
 
     Mat* FridoIllustrate::GetEntireFrame() {

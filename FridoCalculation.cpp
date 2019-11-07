@@ -1,4 +1,5 @@
 #include "FridoPipeline.h"
+#include <chrono>
 
 #define PI 3.14159265
 #define ZEROX 320
@@ -10,11 +11,16 @@ using namespace std;
 
 namespace frido {
 
+    double beginn;
+    double ende;
     FridoCalculation::FridoCalculation() {
+        beginn = 0;
+	    ende = 0;
     }
 
     //Function Calculate to do the whole calculation in a separate file. This Function calls all the steps in the right order.
     void FridoCalculation::Calculate(vector<vector<Point> >& convertedContours) {
+        beginn = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
         //Step CheckContours:
         //Input
         vector<vector<Point> > checkedContoursInput = convertedContours;
@@ -66,6 +72,9 @@ namespace frido {
 //        zero.x = ZEROX;
 //        zero.y = ZEROY;
         prepareNetworkTables(ntDistanceInput, ntAngleInput, ntPointsInput, ntHeightsInput, zero, this->prepareNetworkTablesOutput);
+
+        ende = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+//	    cout << "Calculation Runtine: " << ende - beginn << endl;
     }
 
     vector<vector<Point> >* FridoCalculation::GetCheckedContoursOutput() {
