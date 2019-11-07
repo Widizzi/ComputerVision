@@ -23,6 +23,7 @@ namespace frido {
 
     //Variables for the Entirely Image
     vector<vector<Point> > box_points;
+    vector<Point> height_points(4);
     vector<Point> contours(5);
     Point left_points[4];
     Point right_points[4];
@@ -73,6 +74,7 @@ namespace frido {
         entireFrame = *myprocess->GetCvResizeOutput();
         contours = *mycalc->GetCalculatePointsOutput();
         box_points = *mycalc->GetSortCornersOutput();
+        height_points = *mycalc->GetCalculateOuterHeightPointsOutput();
 
         //needed to fill the rectangle, only arrays possible and no vectors
         for (int i = 0; i < 4; i++) {
@@ -89,6 +91,7 @@ namespace frido {
             circle(entireFrame, box_points[0][i], 5, circleColor, 3);
             circle(entireFrame, box_points[1][i], 5, circleColor, 3);
             circle(entireFrame, contours[i], 5, contourColor, 3);
+            circle(entireFrame, height_points[i], 5, circleColor, 3);
         }
         //Draws the 5th point (the for loop has just 4 iterations because of the boxpoints so I did the last point separate)
         circle(entireFrame, contours[4], 5, contourColor, 3);
