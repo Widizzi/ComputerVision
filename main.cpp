@@ -33,8 +33,8 @@ int main(void) {
 	VideoCapture cap(0); //0 for camera on port 0
 	cap.open(0);
 
-	//VideoCapture cap("../Material/Test.mov"); //Path for movies
-	//cap.open("../Material/Test.mov");
+	//VideoCapture cap("../Material/60FPS.mp4"); //Path for movies
+	//cap.open("../Material/60FPS.mp4");
 
 	// VideoCapture cap("../Material/retroWeit.jpg"); //Path for images -> dont forget the waitKey!
 	// cap.open("../Material/retroWeit.jpg");
@@ -45,11 +45,11 @@ int main(void) {
 	frido::FridoCalculation mycalc;
 	frido::FridoIllustrate myillu;
 
-	NetworkTable::SetIPAddress("10.64.17.2");
+/**	NetworkTable::SetIPAddress("10.64.17.2");
 	NetworkTable::SetClientMode();
 	NetworkTable::Initialize();
 	shared_ptr<NetworkTable> vision = NetworkTable::GetTable("vision");
-	cout << "NetworkTables connected" << endl;
+	cout << "NetworkTables connected" << endl;**/
 
 	if(!cap.isOpened()) {
 
@@ -59,6 +59,8 @@ int main(void) {
 	}
 
 	while(true) {
+		
+		start = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 
 		bool rGood = cap.read(frame);
 
@@ -97,24 +99,23 @@ int main(void) {
 				target = false;
 			}
 
-			vision->PutNumber("Distance", preparedNetworkTables[0]);
+/**			vision->PutNumber("Distance", preparedNetworkTables[0]);
 			vision->PutNumber("Angle", preparedNetworkTables[1]);
 			vision->PutNumber("XDistance", preparedNetworkTables[2]);
 			vision->PutNumber("YDistance", preparedNetworkTables[3]);
 			vision->PutNumber("XOffset", preparedNetworkTables[4]);
 			vision->PutNumber("YOffset", preparedNetworkTables[5]);
-			vision->PutBoolean("Target", target);
+			vision->PutBoolean("Target", target);**/
 
 			myillu.FridoIllustrate::Illustrate(&myprocess, &mycalc, true, false);
 
 			
 			// imshow("Contours", *myillu.GetContoursFrame());
-			// imwrite("../Results/retroWeitHeight.jpg", *myillu.GetEntireFrame());
+//			imwrite("../Results/OffsetDIS50FOV?.jpg", *myillu.GetEntireFrame());
 			imshow("Image", *myillu.GetEntireFrame());
 //			imshow("raw", frame);
-			start = end;
 			end = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
-		//	cout << "Runtime: " << end - start << endl;
+			cout << "Runtime main: " << end - start << endl;
 			if(waitKey(1) >= 0) //waitKey(1) for Videos //waitKey(0) for Pictures
 			break;
 		}	
