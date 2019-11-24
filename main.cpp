@@ -84,16 +84,11 @@ int main(void) {
 
 				cout << "Angle: " << preparedNetworkTables[1] << endl;
 
-	//			cout << "X Distance: " << preparedNetworkTables[2] << endl;
-	//			cout << "Y Distance: " << preparedNetworkTables[3] << endl;
-
-				cout << "X Offset: " << preparedNetworkTables[4] << endl;
-	//			cout << "Y Offset: " << preparedNetworkTables[5] << endl;
+				cout << "X Offset: " << preparedNetworkTables[2] << endl;
+				cout << "Y Offset: " << preparedNetworkTables[3] << endl;
 //				heights = *mycalc.FridoCalculation::GetCalculateHeightsOutput();
 
 //				cout << "aveage height: " << heights[0] << endl;
-//				cout << "New Distance: " << pow(7087 / heights[0], 1.0 / 0.941) << endl;
-//				cout << "Old Distance: " << 37 + (308.5 / pow(2, (heights[0] / 41.5))) << endl;
 
 			} else {
 				target = false;
@@ -101,10 +96,8 @@ int main(void) {
 
 /**			vision->PutNumber("Distance", preparedNetworkTables[0]);
 			vision->PutNumber("Angle", preparedNetworkTables[1]);
-			vision->PutNumber("XDistance", preparedNetworkTables[2]);
-			vision->PutNumber("YDistance", preparedNetworkTables[3]);
-			vision->PutNumber("XOffset", preparedNetworkTables[4]);
-			vision->PutNumber("YOffset", preparedNetworkTables[5]);
+			vision->PutNumber("XOffset", preparedNetworkTables[2]);
+			vision->PutNumber("YOffset", preparedNetworkTables[3]);
 			vision->PutBoolean("Target", target);**/
 
 			myillu.FridoIllustrate::Illustrate(&myprocess, &mycalc, true, false);

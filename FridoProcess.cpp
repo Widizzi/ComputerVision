@@ -130,8 +130,10 @@ void FridoProcess::Process(Mat& source0){
 		resize(src, dst, dSize, fx, fy, interpolation);
 	}
 
-	/**
-	 "
+	/** Sets a blur to the image
+	 *  @param src the image to blur
+	 *  @param kSize kernel size for blur
+	 *  @param dst output image
 	 */
 	void FridoProcess::cvMedianblur(Mat &src, double kSize, Mat &dst) {
 		medianBlur(src, dst, int(kSize));
@@ -139,7 +141,6 @@ void FridoProcess::Process(Mat& source0){
 
 	/**
 	 * Segment an image based on hue, saturation, and value ranges.
-	 *
 	 * @param input The image on which to perform the HSL threshold.
 	 * @param hue The min and max hue.
 	 * @param sat The min and max saturation.
@@ -167,7 +168,6 @@ void FridoProcess::Process(Mat& source0){
 
 	/**
 	 * Find Contours in an image..
-	 *
 	 * @param input The image to find contours in.
 	 * @param externalOnly if only external contours are to be found.
 	 * @param contours vector of contours to put contours in.
@@ -181,7 +181,14 @@ void FridoProcess::Process(Mat& source0){
 	}
 
 	/**
-	 * Filters through contours.
+	 * filter the found contours by some conditions
+	 * @param inputContours contours found in findcontours method
+	 * @param minArea the minimum surface of a contourArea
+	 * @param minWidth minimum width in pixel
+	 * @param maxWidth maximum width in pixel
+	 * @param minHeight minimum height in pixel
+	 * @param maxHeight maximum height in pixel
+	 * @param output filtered contours output
 	*/
 	void FridoProcess::filterContours(vector<vector<Point> > &inputContours, double minArea, double minPerimeter, double minWidth, double maxWidth, double minHeight, double maxHeight, double solidity[], double maxVertexCount, double minVertexCount, double minRatio, double maxRatio, vector<vector<Point> > &output) {
 		vector<Point> hull;

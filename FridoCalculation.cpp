@@ -315,14 +315,12 @@ namespace frido {
 
     //Makes a Vector with all the important values for the NetworkTables that you can read out just this vector
     void FridoCalculation::prepareNetworkTables(double &distance, vector<double> &angle, vector<Point> &points, vector<double> &heights, Point &zero, vector<double> &output) {
-        vector<double> out(6);
+        vector<double> out(4);
         
         out[0] = distance; //distance of Camera to Target
         out[1] = angle[0]; //Angle of Camera to Target
-        out[2] = sin(angle[1] * PI / 180) * distance; //X Distance from Camera to Target
-        out[3] = cos(angle[1] * PI / 180) * distance; //Y Distance from Camera to Target
-        out[4] = (points[4].x - zero.x) / heights[0] * TARGET_HEIGHT; //X Offset to zeroPoint
-        out[5] = (points[4].y - zero.y) / heights[0] * TARGET_HEIGHT; //Y Offset to zeroPoint
+        out[2] = (points[4].x - zero.x) / heights[0] * TARGET_HEIGHT; //X Offset to zeroPoint
+        out[3] = (points[4].y - zero.y) / heights[0] * TARGET_HEIGHT; //Y Offset to zeroPoint
 
         output = out;
 
