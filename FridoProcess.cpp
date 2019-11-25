@@ -21,41 +21,46 @@ void FridoProcess::Process(Mat& source0){
 	start = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 	//Step CV_resize0:
 	//input
-	Mat cvResizeSrc = source0;
+//	Mat cvResizeSrc = source0;
 	Size cvResizeDsize(640, 480);
 	double cvResizeFx = 1.0;  // default Double
 	double cvResizeFy = 1.0;  // default Double
     int cvResizeInterpolation = INTER_LINEAR;
-	cvResize(cvResizeSrc, cvResizeDsize, cvResizeFx, cvResizeFy, cvResizeInterpolation, this->cvResizeOutput);
+//	cvResize(cvResizeSrc, cvResizeDsize, cvResizeFx, cvResizeFy, cvResizeInterpolation, this->cvResizeOutput);
+	cvResize(source0, cvResizeDsize, cvResizeFx, cvResizeFy, cvResizeInterpolation, this->cvResizeOutput);
 	//Step CV_Medianblur0;
 	//input
-	Mat cvMedianblurSrc = cvResizeOutput;
-	double cvMedianblurKsize = 5.0;
-	cvMedianblur(cvMedianblurSrc, cvMedianblurKsize, this->cvMedianblurOutput);
+//	Mat cvMedianblurSrc = cvResizeOutput;
+	double cvMedianblurKsize = 1.0;
+//	cvMedianblur(cvMedianblurSrc, cvMedianblurKsize, this->cvMedianblurOutput);
+	cvMedianblur(cvResizeOutput, cvMedianblurKsize, this->cvMedianblurOutput);
 	//Step HSV_Threshold0:
 	//input
-	Mat hsvThresholdInput = cvMedianblurOutput;
+//	Mat hsvThresholdInput = cvMedianblurOutput;
 	double hsvThresholdHue[] = {0.0, 180.0};
 	double hsvThresholdSaturation[] = {0.0, 60.0};
 	double hsvThresholdValue[] = {120, 255.0};
-	hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
+//	hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
+	hsvThreshold(cvMedianblurOutput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
 	//Step CV_erode0:
 	//input
-	Mat cvErodeSrc = hsvThresholdOutput;
+//	Mat cvErodeSrc = hsvThresholdOutput;
 	Mat cvErodeKernel; //Structure of Erosionfigure default 3x3 Pixel Square
 	Point cvErodeAnchor(-1, -1); //Sets Anchor into center of Erosionfigure
 	double cvErodeIterations = 1.0; //default double
 	int cvErodeBordertype = BORDER_CONSTANT;
 	Scalar cvErodeBordervalue(-1);
-	cvErode(cvErodeSrc, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, this->cvErodeOutput);
+//	cvErode(cvErodeSrc, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, this->cvErodeOutput);
+	cvErode(hsvThresholdOutput, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, this->cvErodeOutput);
 	//Step Find_Contours0:
 	//input
-	Mat findContoursInput = cvErodeOutput;
+//	Mat findContoursInput = cvErodeOutput;
 	bool findContoursExternalOnly = false; //default Boolean
-	findContours(findContoursInput, findContoursExternalOnly, this->findContoursOutput);	
+//	findContours(findContoursInput, findContoursExternalOnly, this->findContoursOutput);
+	findContours(cvErodeOutput, findContoursExternalOnly, this->findContoursOutput);	
 	//Step Filter_Contours
 	//Input
-	vector<vector<Point> > filterContoursContours = findContoursOutput;
+//	vector<vector<Point> > filterContoursContours = findContoursOutput;
 	double filterContoursMinArea = 1000.0;
 	double filterContoursMinPerimeter = 0.0;
 	double filterContoursMinWidth = 20.0;
@@ -67,10 +72,11 @@ void FridoProcess::Process(Mat& source0){
 	double filterContoursMinVersices = 0.0;
 	double filterContoursMinRatio = 0.0;
 	double filterContoursMaxRatio = 10.0;
-	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVersices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
-
+//	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVersices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
+	filterContours(findContoursOutput, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVersices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
+	
 	end = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
-//	cout << "Process Runtine: " << end - start << endl;
+	cout << "Process Runtine: " << end - start << endl;
 }
 
 	/**
