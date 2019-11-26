@@ -6,123 +6,138 @@
 #define ZEROY 240
 #define TARGET_HEIGHT 13.5
 
+#define multiplier 8410.4
+#define exponent 0.985
+#define shift 0
+
+#define distanceBetweenTargets 33.5
+
 using namespace cv;
 using namespace std;
 
 namespace frido {
 
-    double beginn;
-    double ende;
+    /* time measurement variables */
+    double startCalculation;
+    double endCalculation;
 
+	/* constructor sets the time variables to zero to avoid old storage values */
     FridoCalculation::FridoCalculation() {
-        beginn = 0;
-	    ende = 0;
+        startCalculation = 0;
+	    endCalculation = 0;
     }
 
-    //Function Calculate to do the whole calculation in a separate file. This Function calls all the steps in the right order.
+    /* Function Calculate to do the whole calculation in a separate file. This Function calls all the steps in the right order. */
     void FridoCalculation::Calculate(vector<vector<Point> >& convertedContours) {
-        beginn = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
-        //Step CheckContours:
-        //Input
-        vector<vector<Point> > checkedContoursInput = convertedContours;
-        checkContours(checkedContoursInput, this->checkedContoursOutput);
-        //Step SortContours:
-        //input
-        vector<vector<Point> > sortedContoursInput = checkedContoursOutput;
-        vector<Point> space_holder_contour;
-        sortContours(sortedContoursInput, space_holder_contour, this->sortedContoursOutput);
-        //Step MinAreaRect and Point Convert
-        //input
-        vector<vector<Point> > findMinAreaRectInput = sortedContoursOutput;
-        findMinAreaRect(findMinAreaRectInput, this->findMinAreaRectOutput);
-        //Step Sort Box Points:
-        //input
-        vector<vector<Point> > sortCornersInput = findMinAreaRectOutput;
-        sortCorners(sortCornersInput, this->sortCornersOutput);
-        //Step calculate Points:
-        //input
-        vector<vector<Point> > calculatePointsInput = sortCornersOutput;
-        calculatePoints(calculatePointsInput, this->calculatePointsOutput);
-        //Step calculate heights
-        //input
-        vector<Point> calculateAverageHeightInput = calculatePointsOutput;
-        vector<vector<Point> > calculateTargetHeightInput = sortCornersOutput;
-        calculateHeights(calculateAverageHeightInput, calculateTargetHeightInput, this->calculateHeightsOutput,  this->calculateOuterHeightPointsOutput);
-        //Step calculate distance
-        //input
-        vector<double> calculateDistanceInput = calculateHeightsOutput;
-        double multiplier = 8410.4;
-        double sqrt = 0.985;
-        double shift = 0;
-        calculateDistance(calculateDistanceInput, multiplier, sqrt, shift, this->calculateDistanceOutput);
-        //Step calculate angle
-        //input
-        vector<double> calculateAngleInput = calculateHeightsOutput;
-        vector<Point> pointsInput = calculatePointsOutput;
-        double distanceInput = calculateDistanceOutput;
-        Point zero;
+
+		/* writest the system time into the start variable */
+        startCalculation = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+        //sortContours:
+        vector<Point> space_holder_contour; //contour to temporarily save a contours while reordering them
+        sortContours(convertedContours, space_holder_contour, this->sortedContoursOutput);
+
+        //MinAreaRect and Point Convert
+        findMinAreaRect(sortedContoursOutput, this->findMinAreaRectOutput);
+
+        //Sort Box Points:
+        sortCorners(findMinAreaRectOutput, this->sortCornersOutput);
+
+        //calculate Points:
+        calculatePoints(sortCornersOutput, this->calculatePointsOutput);
+
+        //calculate heights
+        calculateHeights(calculatePointsOutput, sortCornersOutput, this->calculateHeightsOutput,  this->calculateOuterHeightPointsOutput);
+
+        //calculate distance
+        calculateDistance(calculateHeightsOutput, this->calculateDistanceOutput);
+        
+        //calculate angle
+        calculateAngle(calculateHeightsOutput, this->calculateAngleOutput);
+
+        //prepare Networktables
+        Point zero; //center of the image
         zero.x = ZEROX;
         zero.y = ZEROY;
-        calculateAngle(calculateAngleInput, pointsInput, distanceInput, zero, this->calculateAngleOutput);
-        //Step prepare Networktables
-        //input
-        double ntDistanceInput = calculateDistanceOutput;
-        vector<double> ntAngleInput = calculateAngleOutput;
-        vector<Point> ntPointsInput = calculatePointsOutput;
-        vector<double> ntHeightsInput = calculateHeightsOutput;
-//        Point zero;
-//        zero.x = ZEROX;
-//        zero.y = ZEROY;
-        prepareNetworkTables(ntDistanceInput, ntAngleInput, ntPointsInput, ntHeightsInput, zero, this->prepareNetworkTablesOutput);
+        prepareNetworkTables(calculateDistanceOutput, calculateAngleOutput, calculatePointsOutput, calculateHeightsOutput, zero, this->prepareNetworkTablesOutput);
 
-        ende = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
-//	    cout << "Calculation Runtine: " << ende - beginn << endl;
+		/* writes the system time into the end variable and compares the time variables to calculate the time used in the Calculation class */
+        endCalculation = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+	    cout << "Calculation Runtine: " << endCalculation - startCalculation << endl;
     }
 
-    vector<vector<Point> >* FridoCalculation::GetCheckedContoursOutput() {
-        return &(this->checkedContoursOutput);
-    }
+    /**
+	 * This method returns the sortedContoursOutput output as a pointer.
+	 * @return vector<vector<Point> > output from sortContours.
+	 */
     vector<vector<Point> >* FridoCalculation::GetSortedContoursOutput() {
         return &(this->sortedContoursOutput);
     }
+	/**
+	 * This method returns the findMinAreaRectOutput output as a pointer.
+	 * @return vector<vector<Point> > output from minAreaRect.
+	 */    
     vector<vector<Point> >* FridoCalculation::GetFindMinAreaRectOutput() {
         return &(this->findMinAreaRectOutput);
     }
+	/**
+	 * This method returns the sortCornersOutput output as a pointer.
+	 * @return vector<vector<Point> > output from sortCorners.
+	 */    
     vector<vector<Point> >* FridoCalculation::GetSortCornersOutput() {
         return &(this->sortCornersOutput);
     }
+	/**
+	 * This method returns the calculatePointsOutput output as a pointer.
+	 * @return vector<Point> output from calculatePoints.
+	 */    
     vector<Point>* FridoCalculation::GetCalculatePointsOutput() {
         return &(this->calculatePointsOutput);
     }
+	/**
+	 * This method returns the calculatedHeightsOutput output as a pointer.
+	 * @return vector<double> output from calculateHeights.
+	 */    
     vector<double>* FridoCalculation::GetCalculateHeightsOutput() {
         return &(this->calculateHeightsOutput);
     }
+	/**
+	 * This method returns the calculateOuterHeightPointsOutput output as a pointer.
+	 * @return vector<Point> output from calculateHeights.
+	 */    
     vector<Point>* FridoCalculation::GetCalculateOuterHeightPointsOutput() {
         return &(this->calculateOuterHeightPointsOutput);
     }
+	/**
+	 * This method returns the calculateDistanceOutput output as a pointer.
+	 * @return double output from calculateDistance.
+	 */    
     double* FridoCalculation::GetCalculateDistanceOutput() {
         return &(this->calculateDistanceOutput);
     }
+	/**
+	 * This method returns the calculateAngleOutput output as a pointer.
+	 * @return vector<double> output from calculateAngle.
+	 */    
     vector<double>* FridoCalculation::GetCalculateAngleOutput() {
         return &(this->calculateAngleOutput);
     }
+	/**
+	 * This method returns the prepareNetworkTablesOutput output as a pointer.
+	 * @return vector<double> output from prepareNetworkTables.
+	 */    
     vector<double>* FridoCalculation::GetPrepareNetworkTablesOutput() {
         return &(this->prepareNetworkTablesOutput);
     }
 
-    //The checkContours Function checks if there are exactely two contours. Its needed to avoid errors in the calculation with nullpointer.
-    void FridoCalculation::checkContours(vector<vector<Point> > &checkedContoursInput, vector<vector<Point> > &output) {
-        output.clear();
-//        if (checkedContoursInput.size() != 2) {	
-//            return;
-//        } else {
-            output = checkedContoursInput;
-//        }
-    }
-
-    //The sortContours function brings the contours in the right order. Left contours has to be on array slot 0, right Contour on slot 1
+    /* The sortContours function brings the contours in the right order. Left contours has to be on array slot 0, right Contour on slot 1 
+     * @param sortedContoursInput input form the filtered contours output
+     * @param space_holder_contour contour to temporarily save the contours while they are getting sorted
+     * @param output sorted contours in a vector
+    */
     void FridoCalculation::sortContours(vector<vector<Point> > &sortedContoursInput, vector<Point> &space_holder_contour, vector<vector<Point> > &output) {
         output.clear();
+        /* changes the order of the contours by comparing a random point because every point from the left contour should have a lower x-value */
         if (sortedContoursInput[0][0].x > sortedContoursInput[1][0].x) {
                 space_holder_contour = sortedContoursInput[0];
                 sortedContoursInput[0] = sortedContoursInput[1];
@@ -131,7 +146,10 @@ namespace frido {
         output = sortedContoursInput;
     }
 
-    //Function findMinAreaRect searches for the rectangle in the contours and returns the corner Points of the contours in an arrray
+    /* Function findMinAreaRect searches for the rectangle in the contours and returns the corner Points of the contours in an arrray
+     * @param targets the sorted contours to find the min area rect
+     * @param output the points of the corners of the min area rect
+    */
     void FridoCalculation::findMinAreaRect(vector<vector<Point> > &targets, vector<vector<Point> > &output) {
         output.clear();
         RotatedRect minAreaTarget;
@@ -140,9 +158,11 @@ namespace frido {
         out.resize(2, vector<Point>(4));
         int targetNR = 0;
 
+        /* iterates through the two contours and saves the corner points of the min area rect */
         for(vector<Point> target : targets) {
             minAreaTarget = minAreaRect(target);
             minAreaTarget.points(box_2f);
+            /* converts the 2f points into Points */
             for(int i = 0; i < 4; i++) {
                 out[targetNR][i] = box_2f[i];
             }
@@ -151,7 +171,10 @@ namespace frido {
         output = out;
     }
 
-    //Function which sorts the Corners of the Contours in the Array for easy localisation
+    /* Function which sorts the Corners of the Contours in the Array for easy localisation 
+     * @param boxes the corners of the min area rect
+     * @param output the corners in the right order left target: (topleft, topright, bottemleft, bottemright) -> mirrored for the right target
+    */
     void FridoCalculation::sortCorners(vector<vector<Point> > &boxes, vector<vector<Point> > &output) {
         output.clear();
         int yValueSort[4];
@@ -161,15 +184,15 @@ namespace frido {
         out.resize(2, vector<Point>(4));
         int targetNR = 0;
         for (vector<Point> box : boxes) {
-            //Write all y Values of a Contourbox in an Array
+            /* Write all y Values of a Contourbox in an Array */
             for (int i = 0; i < 4; i++) {
                 yValueSort[i] = box[i].y;
             }
 
-            //Sort the Array by Value
+            /* Sort the Array by Value */
             sort(yValueSort, yValueSort + 4);
 
-            //Rewrite positions in the original Array with the sorted Array
+            /* Rewrite positions in the original Array with the sorted Array */
             for (int i = 0; i < 4; i++) {
                 for (int a = 0; a < 4; a++) {
                     if (yValueSort[i] == box[a].y) {
@@ -179,7 +202,7 @@ namespace frido {
                 }
             }
 
-            //Sorts the Boxpoints by X Value in position 1 + 2 and in position 3 + 4
+            /* Sorts the Boxpoints by X Value in position 1 + 2 and in position 3 + 4 */
             for (int i = 0; i > 4; i += 2) {
                 if(box_sorted[i].x < box_sorted[i + 1].x) {
                     space_holder_point = box_sorted[i];
@@ -198,11 +221,14 @@ namespace frido {
         output = out;
     }
 
-    //Here comes the calculation of all the important Points needed for the calculation
+    /* Here comes the calculation of all the important Points needed for the calculation
+     * @param targetPoints the corners of the contours in a sorted vector
+     * @param output the important points in the image
+    */
     void FridoCalculation::calculatePoints(vector<vector<Point> > &targetPoints, vector<Point> &output) {
         output.clear();
         vector<Point> out(5);
-        //Output[leftMid, rightMid, upperCenterX, lowerCenterX, centerTarget]
+        /* output[leftMid, rightMid, upperCenterX, lowerCenterX, centerTarget] */
         out[0].x = targetPoints[0][0].x + (targetPoints[0][3].x - targetPoints[0][0].x) / 2;  
         out[0].y = (targetPoints[0][0].y + targetPoints[0][1].y + targetPoints[0][2].y + targetPoints[0][3].y) / 4;
         out[1].x = targetPoints[1][0].x + (targetPoints[1][3].x - targetPoints[1][0].x) / 2;
@@ -216,31 +242,35 @@ namespace frido {
 
     }
 
-    //With the Values of the Points you can calculate the height of each targets and the value of the average height
+    /* With the Values of the Points you can calculate the height of each targets and the value of the average height
+     * @param points the important points calculated before
+     * @param corners the sorted corners of the targets
+     * @param output the calculated heights
+     * @param outputPoint the four points for the solo target heights
+    */
     void FridoCalculation::calculateHeights(vector<Point> &points, vector<vector<Point> > &corners, vector<double> &output, vector<Point> &outputPoint) {
         vector<double> out(3);
         vector<Point> outputPoints(4);
+
+        /* the average height calculated with difference between the y-values of the point zero in the target */
         double average_height = points[3].y - points[2].y;
-        cout << "average Height: " << average_height << endl;
+
+        /* delta x and delta y for the gradient triangle to calculate the gradient of the linear equation */
         double height_difference_one = corners[1][0].y - corners[0][0].y;
         double lenght_difference_one = corners[1][0].x - corners[0][0].x;
 
         double height_difference_two = corners[1][2].y - corners[0][2].y;
         double lenght_difference_two = corners[1][2].x - corners[0][2].x;
 
+        /* calculate the gradient */
         double m_one = height_difference_one / lenght_difference_one;
         double m_two = height_difference_two / lenght_difference_two;
 
-//        cout << "m one: " << m_one << endl;
-//        cout << "m two: " << m_two << endl;
-
+        /* y axis intercept calculation with the equation: y = m*x + q */
         double q_one = corners[0][0].y - m_one * corners[0][0].x;
         double q_two = corners[0][2].y - m_two * corners[0][2].x;
-//        cout << "q one: " << q_one << endl;
-//        cout << "q two: " << q_two << endl;
 
-        Scalar color(0, 255, 255);
-
+        /* calculation of the points on the calculated equations for the outer heights */
         Point upper_left;
         upper_left.x = corners[0][2].x + (corners[0][0].x - corners[0][2].x) / 2;
         upper_left.y = m_one * upper_left.x + q_one;
@@ -257,16 +287,17 @@ namespace frido {
         lower_right.x = corners[1][0].x + (corners[1][2].x - corners[1][0].x) / 2;
         lower_right.y = m_two * lower_right.x + q_two;
 
+        /* calculation of the outer heights with the points */
         double height_left = lower_left.y - upper_left.y;
         double height_right = lower_right.y - upper_right.y;
 
-//        double height_left = corners[0][2].y - corners[0][0].y;
-//        double height_right = corners[1][2].y - corners[1][0].y;
+        /* generates output */
         out[0] = average_height;
         out[1] = height_left;
         out[2] = height_right;
         output = out;
 
+        /* generates outputPoint */
         outputPoints[0] = upper_left;
         outputPoints[1] = lower_left;
         outputPoints[2] = upper_right;
@@ -275,36 +306,34 @@ namespace frido {
 
     }
 
-    //last thing to do is to calculate the distance of the Robot to the target. we can do that with a formula: offset + (a / (averageHeight / b) ^ 2)
-    void FridoCalculation::calculateDistance(vector<double> &heights, double multiplier, double exponent, double shift, double &output) {
+    /* last thing to do is to calculate the distance of the Robot to the target. we can do that with a formula: offset + (a / (averageHeight / b) ^ 2)
+     * @param heights the average height to calculate the distance
+     * @param output the distane of the center of the target
+    */
+    void FridoCalculation::calculateDistance(vector<double> &heights, double &output) {
+        /* the formula is y = 1 / x with some more detailed measured values */
         double distance = multiplier / pow((heights[0] + shift), exponent);
         output = distance;
     }
 
-    //to calculate the angle of the robot in relation to the target we have to calculate the difference between the height of the two targets and use a factor to display it in degrees
-    void FridoCalculation::calculateAngle(vector<double> &heights, vector<Point> &points, double distance, Point &zero, vector<double> &output) {
+    /* to calculate the angle of the robot in relation to the target we have to calculate the difference between the distance from the left and the right target.
+     * beacause of the right-angled triangle with the 33.5 cm physical distance between the two targets on the wall and the difference of the distance
+     * you can calculate the angle with the arcus sinus and convert it into degrees with * 180 / PI;
+     * @param heights the outer heights
+     * @param output the angle and the absolut angle
+    */
+    void FridoCalculation::calculateAngle(vector<double> &heights, vector<double> &output) {
         vector<double> out(2);
-        //convertes the offset from pixels to cm. it uses the height of the target (14cm) as a reference
-        double leftOffsetInCM = (points[0].x - zero.x) / heights[1] * TARGET_HEIGHT;
-        double rightOffsetInCM = (points[1].x - zero.x) / heights[2] * TARGET_HEIGHT;
-//        cout << "leftfOffset: " << leftOffsetInCM << endl;
-//        cout << "rightOffset: " << rightOffsetInCM << endl;
-        double distanceLeftTarget = pow(8410.4 / heights[1], 1.0 / 0.985);
-        double distanceRightTarget = pow(8410.4 / heights[2], 1.0 / 0.985);
-        cout << "distacneleftTarget: " << distanceLeftTarget << endl;
-        cout << "distanceRightTarget: " << distanceRightTarget << endl;
-        double leftTargetNoInfluence = sqrt( pow(distanceLeftTarget, 2) - pow(leftOffsetInCM, 2) );
-        double rightTargetNoInfluence = sqrt( pow(distanceRightTarget, 2) - pow(rightOffsetInCM, 2) );
-//        cout << "left no inf: " << leftTargetNoInfluence << endl;
-//        cout << "right no inf: " << rightTargetNoInfluence << endl;
-        double angleGegakt = distanceLeftTarget - distanceRightTarget;
-//        double angleGegakt = leftTargetNoInfluence - rightTargetNoInfluence;
-        cout << "Gegenkat: " << angleGegakt << endl;
-        double angleAnkat = abs(leftOffsetInCM - rightOffsetInCM);
-//        cout << "ankat: " << angleAnkat << endl;
-      //  double angle = atan(angleGegakt / angleAnkat) *180 / PI;
 
-        double angle = asin(angleGegakt / 33.5) * 180 / PI;
+        /* calculates the distances to the targets */
+        double distanceLeftTarget = pow(multiplier / heights[1], 1.0 / exponent);
+        double distanceRightTarget = pow(multiplier / heights[2], 1.0 / exponent);
+
+        /* calculates the opposite side of the angle */
+        double angleGegakt = distanceLeftTarget - distanceRightTarget;
+
+        /* calculate angle with the arcus sinus */
+        double angle = asin(angleGegakt / distanceBetweenTargets) * 180 / PI;
 
         double absAngle = abs(angle);
         out[0] = angle;
@@ -313,7 +342,7 @@ namespace frido {
 
     }
 
-    //Makes a Vector with all the important values for the NetworkTables that you can read out just this vector
+    /* Makes a Vector with all the important values for the NetworkTables */
     void FridoCalculation::prepareNetworkTables(double &distance, vector<double> &angle, vector<Point> &points, vector<double> &heights, Point &zero, vector<double> &output) {
         vector<double> out(4);
         

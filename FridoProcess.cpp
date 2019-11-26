@@ -7,116 +7,103 @@ using namespace std;
 
 namespace frido {
 
-double start;
-double end;
+	/* variables for time measurement */
+	double startProcess;
+	double endProcess;
 
-FridoProcess::FridoProcess() {
-	start = 0;
-	end = 0;
-}
-/**
-* Runs an iteration of the pipeline and updates outputs.
-*/
-void FridoProcess::Process(Mat& source0){
-	start = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
-	//Step CV_resize0:
-	//input
-//	Mat cvResizeSrc = source0;
-	Size cvResizeDsize(640, 480);
-	double cvResizeFx = 1.0;  // default Double
-	double cvResizeFy = 1.0;  // default Double
-    int cvResizeInterpolation = INTER_LINEAR;
-//	cvResize(cvResizeSrc, cvResizeDsize, cvResizeFx, cvResizeFy, cvResizeInterpolation, this->cvResizeOutput);
-	cvResize(source0, cvResizeDsize, cvResizeFx, cvResizeFy, cvResizeInterpolation, this->cvResizeOutput);
-	//Step CV_Medianblur0;
-	//input
-//	Mat cvMedianblurSrc = cvResizeOutput;
-	double cvMedianblurKsize = 1.0;
-//	cvMedianblur(cvMedianblurSrc, cvMedianblurKsize, this->cvMedianblurOutput);
-	cvMedianblur(cvResizeOutput, cvMedianblurKsize, this->cvMedianblurOutput);
-	//Step HSV_Threshold0:
-	//input
-//	Mat hsvThresholdInput = cvMedianblurOutput;
-	double hsvThresholdHue[] = {0.0, 180.0};
-	double hsvThresholdSaturation[] = {0.0, 60.0};
-	double hsvThresholdValue[] = {120, 255.0};
-//	hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
-	hsvThreshold(cvMedianblurOutput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
-	//Step CV_erode0:
-	//input
-//	Mat cvErodeSrc = hsvThresholdOutput;
-	Mat cvErodeKernel; //Structure of Erosionfigure default 3x3 Pixel Square
-	Point cvErodeAnchor(-1, -1); //Sets Anchor into center of Erosionfigure
-	double cvErodeIterations = 1.0; //default double
-	int cvErodeBordertype = BORDER_CONSTANT;
-	Scalar cvErodeBordervalue(-1);
-//	cvErode(cvErodeSrc, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, this->cvErodeOutput);
-	cvErode(hsvThresholdOutput, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, this->cvErodeOutput);
-	//Step Find_Contours0:
-	//input
-//	Mat findContoursInput = cvErodeOutput;
-	bool findContoursExternalOnly = false; //default Boolean
-//	findContours(findContoursInput, findContoursExternalOnly, this->findContoursOutput);
-	findContours(cvErodeOutput, findContoursExternalOnly, this->findContoursOutput);	
-	//Step Filter_Contours
-	//Input
-//	vector<vector<Point> > filterContoursContours = findContoursOutput;
-	double filterContoursMinArea = 1000.0;
-	double filterContoursMinPerimeter = 0.0;
-	double filterContoursMinWidth = 20.0;
-	double filterContoursMaxWidth = 150.0;
-	double filterContoursMinHeight = 50.0;
-	double filterContoursMaxHeight = 250.0;
-	double filterContoursSolidity[] = {0, 100};
-	double filterContoursMaxVertices = 1000000.0;
-	double filterContoursMinVersices = 0.0;
-	double filterContoursMinRatio = 0.0;
-	double filterContoursMaxRatio = 10.0;
-//	filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVersices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
-	filterContours(findContoursOutput, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVersices, filterContoursMinRatio, filterContoursMaxRatio, this->filterContoursOutput);
-	
-	end = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
-	cout << "Process Runtine: " << end - start << endl;
-}
+	/* constructor sets the variables to zero to avoid old storage values */
+	FridoProcess::FridoProcess() {
+		startProcess = 0;
+		endProcess = 0;
+	}
+
+	/* Function is called by the main class and handles the order of the image process */
+	void FridoProcess::Process(Mat& source0){
+
+		/* writest the system time into the start variable */
+		startProcess = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+		//resize
+		Size cvResizeDsize(640, 480); //Resolution (x pixels, y pixels)
+		double cvResizeFx = 1.0; //Stretch factor for the x axis
+		double cvResizeFy = 1.0; //Stretch factor for the y axis
+		int cvResizeInterpolation = INTER_LINEAR; //enum for the reducing or stretching mode of the method
+		cvResize(source0, cvResizeDsize, cvResizeFx, cvResizeFy, cvResizeInterpolation, this->cvResizeOutput);
+
+		//medianblur
+		double cvMedianblurKsize = 5.0; //kernel size as a square with the value for one side
+		cvMedianblur(cvResizeOutput, cvMedianblurKsize, this->cvMedianblurOutput);
+
+		//HSV_Threshold
+		double hsvThresholdHue[] = {0.0, 180.0}; //hue value range from 0 to 255
+		double hsvThresholdSaturation[] = {0.0, 60.0}; //saturation value range from 0 to 255
+		double hsvThresholdValue[] = {120, 255.0}; //brightness value range from 0 to 255
+		hsvThreshold(cvMedianblurOutput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, this->hsvThresholdOutput);
+
+		//erode
+		Mat cvErodeKernel; //Structure of erosion figure default 3x3 Ppixel square
+		Point cvErodeAnchor(-1, -1); //Sets Anchor into center of erosion figure
+		double cvErodeIterations = 1.0; //Times to do the erode method on the image
+		int cvErodeBordertype = BORDER_CONSTANT; //enum to define how the image is expanded 
+		Scalar cvErodeBordervalue(-1);  //used in case of a constant border, defines the color of the border
+		cvErode(hsvThresholdOutput, cvErodeKernel, cvErodeAnchor, cvErodeIterations, cvErodeBordertype, cvErodeBordervalue, this->cvErodeOutput);
+
+		//findContours
+		bool findContoursExternalOnly = false; //defines which contorus should be found (changes between all and external only)
+		findContours(cvErodeOutput, findContoursExternalOnly, this->findContoursOutput);	
+
+		//filterContours
+		double filterContoursMinArea = 1000.0; //in pixels
+		double filterContoursMinWidth = 20.0; //in pixels
+		double filterContoursMaxWidth = 150.0; //in pixels
+		double filterContoursMinHeight = 50.0; //in pixels
+		double filterContoursMaxHeight = 250.0; //in pixels
+		filterContours(findContoursOutput, filterContoursMinArea, filterContoursMinWidth, filterContoursMaxWidth,
+		filterContoursMinHeight, filterContoursMaxHeight, this->filterContoursOutput);
+		
+		/* writes the system time into the end variable and compares the time variables to calculate the time used in the Process class */
+		endProcess = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+		cout << "Process Runtine: " << endProcess - startProcess << endl;
+	}
 
 	/**
-	 * This method is a generated getter for the output of a CV_resize.
-	 * @return Mat output from CV_resize.
+	 * This method returns the resize output as a pointer.
+	 * @return Mat output from resize.
 	 */
 	Mat* FridoProcess::GetCvResizeOutput(){
 		return &(this->cvResizeOutput);
 	}
 	/**
-	 * This method is a generated getter for the output of a CV_medianBlur.
-	 * @return Mat output from CV_medianBlur.
+	 * This method returns the medianBlur output as a pointer.
+	 * @return Mat output from medianBlur.
 	 */
 	Mat* FridoProcess::GetCvMedianblurOutput(){
 		return &(this->cvMedianblurOutput);
 	}
 	/**
-	 * This method is a generated getter for the output of a HSV_Threshold.
+	 * This method returns the HSV_Threshold output as a pointer.
 	 * @return Mat output from HSV_Threshold.
 	 */
 	Mat* FridoProcess::GetHsvThresholdOutput(){
 		return &(this->hsvThresholdOutput);
 	}
 	/**
-	 * This method is a generated getter for the output of a CV_erode.
-	 * @return Mat output from CV_erode.
+	 * This method returns the erode output as a pointer.
+	 * @return Mat output from erode.
 	 */
 	Mat* FridoProcess::GetCvErodeOutput(){
 		return &(this->cvErodeOutput);
 	}
 	/**
-	 * This method is a generated getter for the output of a Find_Contorus.
-	 * @return Mat output from Find_Contours.
+	 * This method returns the found contours output as a pointer.
+	 * @return Mat output from findContours.
 	 */
 	vector<vector<Point> >* FridoProcess::GetFindContoursOutput(){
 		return &(this->findContoursOutput);
 	}
 	/**
-	 * This method is a generated getter for the output of a Filter_Contorus.
-	 * @return Mat output from Filter_Contours.
+	 * This method returns the filtered contours output as a pointer..
+	 * @return Mat output from filterContours.
 	 */
 	vector<vector<Point> >* FridoProcess::GetFilterContoursOutput(){
 		return &(this->filterContoursOutput);
@@ -196,8 +183,7 @@ void FridoProcess::Process(Mat& source0){
 	 * @param maxHeight maximum height in pixel
 	 * @param output filtered contours output
 	*/
-	void FridoProcess::filterContours(vector<vector<Point> > &inputContours, double minArea, double minPerimeter, double minWidth, double maxWidth, double minHeight, double maxHeight, double solidity[], double maxVertexCount, double minVertexCount, double minRatio, double maxRatio, vector<vector<Point> > &output) {
-		vector<Point> hull;
+	void FridoProcess::filterContours(vector<vector<Point> > &inputContours, double minArea, double minWidth, double maxWidth, double minHeight, double maxHeight, vector<vector<Point> > &output) {
 		vector<Point> approx;
 		output.clear();
 		for(vector<Point> contour: inputContours) {
@@ -218,19 +204,9 @@ void FridoProcess::Process(Mat& source0){
 			if (bb.height < minHeight ||bb.height > maxHeight) continue;
 			double area = contourArea(contour);
 			if (area < minArea) continue;
-/**			if ( arcLength(contour, true) < minPerimeter) continue;
-			//calculate points of a perimeter which has no concave curves from the input contour and saves it in the hull vector
-			convexHull(Mat(contour, true), hull); 
-			// the more concave parts the raw contour has, the lower is the solid value
-			double solid = 100 * area / contourArea(hull);
-			if (solid < solidity[0] || solid > solidity[1]) continue;
-			//Option to filter the contour by count of peaks
-			if (contour.size() < minVertexCount || contour.size() > maxVertexCount) continue;
-			double ratio = (double) bb.width / (double) bb.height;
-			if (ratio < minRatio || ratio > maxRatio) continue;
-**/			//Filters the contour if there are less then 4 or more then 5 corners
+			/* Filters the contour if there are less then 4 or more then 5 corners */
 			if (approx.size() < 4 || approx.size() > 6) continue;
-			//pushes the contour back to the output if the contour didnt get kicked out because of an invalid condition
+			/* pushes the contour back to the output if the contour didnt get kicked out because of an invalid condition */
 			output.push_back(contour);
 
 		}

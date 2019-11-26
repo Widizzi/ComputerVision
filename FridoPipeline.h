@@ -14,10 +14,11 @@
 using namespace cv;
 using namespace std;
 
-//namespace that the names of the right functions are taken and not other ones if there exist some
+/* namespace frido */
 namespace frido {
 
 class FridoProcess {
+	/* private variables and methods to call in the FridoProcess class */
 	private:
 		Mat cvResizeOutput;
 		Mat cvMedianblurOutput;
@@ -30,7 +31,8 @@ class FridoProcess {
 		void hsvThreshold(Mat &, double [], double [], double [], Mat &);
 		void cvErode(Mat &, Mat &, Point &, double, int, Scalar &, Mat &);
 		void findContours(Mat &, bool, vector<vector<Point> > &);
-		void filterContours(vector<vector<Point> > &, double, double, double, double, double, double, double [], double, double, double, double, vector<vector<Point> > &);	
+		void filterContours(vector<vector<Point> > &, double, double, double, double, double, vector<vector<Point> > &);	
+	/* public getter pointers and the Process method */
 	public:
 		FridoProcess();
 		void Process(Mat& source0);
@@ -45,8 +47,8 @@ class FridoProcess {
 
 
 class FridoCalculation {
+	/* private variables and methods to call in the FridoCalculation class */
 	private:
-		vector<vector<Point> > checkedContoursOutput;
 		vector<vector<Point> > sortedContoursOutput;
 		vector<vector<Point> > findMinAreaRectOutput;
 		vector<vector<Point> > sortCornersOutput;
@@ -56,15 +58,15 @@ class FridoCalculation {
 		vector<double>  calculateAngleOutput;
 		double calculateDistanceOutput;
 		vector<double> prepareNetworkTablesOutput;
-		void checkContours(vector<vector<Point> > &, vector<vector<Point> > &);
 		void sortContours(vector<vector<Point> > &, vector<Point> &, vector<vector<Point> > &);
 		void findMinAreaRect(vector<vector<Point> > &, vector<vector<Point> > &);
 		void sortCorners(vector<vector<Point> > &, vector<vector<Point> > &);
 		void calculatePoints(vector<vector<Point> > &, vector<Point> &);
 		void calculateHeights(vector<Point> &, vector<vector<Point> > &, vector<double> &, vector<Point> &);
-		void calculateAngle(vector<double> &, vector<Point> &, double, Point &, vector<double> &);
-		void calculateDistance(vector<double> &, double, double, double, double &);
+		void calculateAngle(vector<double> &, vector<double> &);
+		void calculateDistance(vector<double> &, double &);
 		void prepareNetworkTables(double &, vector<double> &, vector<Point> &, vector<double> &, Point &, vector<double> &);
+	/* public getter pointers and the Calculate method */
 	public:
 		FridoCalculation();
 		void Calculate(vector<vector<Point> >& convertedContoursInput);
@@ -82,9 +84,11 @@ class FridoCalculation {
 
 
 class FridoIllustrate {
+	/* private variables and methods to call in the FridoIllustrate class */
 	private:
 		void drawEntire(FridoProcess*, FridoCalculation*);
 		void drawContours(FridoProcess*);
+	/* public getter pointers and the Process method */
 	public:
 		FridoIllustrate();
 		void Illustrate(FridoProcess* myprocess, FridoCalculation* mycalc, bool, bool);
