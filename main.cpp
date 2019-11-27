@@ -30,6 +30,7 @@ int main(void) {
 	vector<double> heights;
 	int startMain = 0;
 	int endMain = 0;
+	shared_ptr<NetworkTable> vision;
 
 	/* 0 for camera on port 0 */
 	VideoCapture cap(0); 
@@ -57,10 +58,10 @@ int main(void) {
 		NetworkTable::SetIPAddress("10.64.17.2");
 		NetworkTable::SetClientMode();
 		NetworkTable::Initialize();
-		shared_ptr<NetworkTable> vision = NetworkTable::GetTable("vision");
+		vision = NetworkTable::GetTable("vision");
 		networkTables = true;
 		cout << "NetworkTables connected" << endl;
-	} catch {
+	} catch (std::exception& e) {
 		networkTables = false;
 		cout << "Exception: No NetworTables aviable" << endl;
 	}
