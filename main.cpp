@@ -24,7 +24,7 @@ int main(void) {
 
 	Mat frame;
 	bool target;
-	bool networkTables = false;
+	bool NETWORK_TABLES_IN_USES = false;
 	vector<vector<Point> > contours;
 	vector<double> preparedNetworkTables;
 	vector<double> heights;
@@ -51,20 +51,12 @@ int main(void) {
 	frido::FridoCalculation mycalc;
 	frido::FridoIllustrate myillu;
 
-	/* try to initialize the NetworkTables 
-	 * if it fails disable the usage
-	*/
-	try {
-		NetworkTable::SetIPAddress("10.64.17.2");
-		NetworkTable::SetClientMode();
-		NetworkTable::Initialize();
-		vision = NetworkTable::GetTable("vision");
-		networkTables = true;
-		cout << "NetworkTables connected" << endl;
-	} catch (std::exception& e) {
-		networkTables = false;
-		cout << "Exception: No NetworTables aviable" << endl;
-	}
+	/* initialize the NetworkTables */
+	NetworkTable::SetIPAddress("10.64.17.2");
+	NetworkTable::SetClientMode();
+	NetworkTable::Initialize();
+	vision = NetworkTable::GetTable("vision");
+
 
 	/* check if an input is aviable */
 	if(!cap.isOpened()) {
@@ -121,8 +113,8 @@ int main(void) {
 				target = false;
 			}
 
-			/* put the values to the NetworkTables if they were initialized */
-			if (networkTables == true) {
+			/* put the values to the NetworkTables if they are in usage */
+			if (NETWORK_TABLES_IN_USES == true) {
 				vision->PutNumber("Distance", preparedNetworkTables[0]);
 				vision->PutNumber("Angle", preparedNetworkTables[1]);
 				vision->PutNumber("XOffset", preparedNetworkTables[2]);
